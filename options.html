@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>GestureFlow 设置</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+      background-color: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+      color: #1a73e8;
+      margin-top: 0;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    h2 {
+      color: #5f6368;
+      margin-top: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    input[type="color"],
+    input[type="number"],
+    select {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 100%;
+      max-width: 300px;
+      box-sizing: border-box;
+    }
+    
+    .gesture-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    
+    .gesture-item {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 4px;
+      border: 1px solid #eee;
+    }
+    
+    .gesture-name {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    
+    button {
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 20px;
+    }
+    
+    button:hover {
+      background-color: #1557b0;
+    }
+    
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+    
+    .success {
+      background-color: #e6f4ea;
+      color: #137333;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>GestureFlow 设置</h1>
+    
+    <h2>外观设置</h2>
+    <div class="form-group">
+      <label for="lineColor">轨迹颜色</label>
+      <input type="color" id="lineColor" name="lineColor">
+    </div>
+    
+    <div class="form-group">
+      <label for="lineWidth">轨迹粗细 (像素)</label>
+      <input type="number" id="lineWidth" name="lineWidth" min="1" max="10">
+    </div>
+    
+    <h2>手势设置</h2>
+    <p>为每个手势动作选择对应的功能：</p>
+    
+    <div class="gesture-grid" id="gestureGrid">
+      <!-- 这里将通过JavaScript动态填充手势设置 -->
+    </div>
+    
+    <button id="saveButton">保存设置</button>
+    <div id="status" class="status">设置已保存！</div>
+  </div>
+  
+  <script src="options.js"></script>
+  <script src="content.js"></script>
+</body>
+</html>
