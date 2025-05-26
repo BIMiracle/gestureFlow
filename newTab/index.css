@@ -76,6 +76,8 @@ nav {
   text-decoration: none;
   margin: 0 2.736vmin;
   font-size: var(--search-font-size);
+  cursor: pointer;
+  user-select: none;
 }
 
 .nav-links .active {

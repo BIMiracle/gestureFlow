@@ -127,3 +127,12 @@ windmillTop.addEventListener("click", async () => {
     isAnimating = false; // 确保 isAnimating 总是被重置
   }
 });
+
+const navTypes = document.querySelectorAll(".nav-type");
+
+navTypes.forEach(type => {
+  type.addEventListener("click", () => {
+    navTypes.forEach(t => t.classList.remove("active"));
+    type.classList.add("active");
+  });
+});
