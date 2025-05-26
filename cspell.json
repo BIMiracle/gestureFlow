@@ -1,0 +1,7 @@
+{
+	"$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+	"version": "0.2",
+	"dictionaries": ["project-words"],
+	"ignorePaths": ["manifest.json","cspell.json", "node_modules", "package.json", ".gitignore"],
+	"words": ["nowrap", "rgba", "vmin", "webp", "wechat"]
+}
