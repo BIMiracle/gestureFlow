@@ -229,6 +229,9 @@ document.addEventListener("wheel", (event) => {
   // 防止过快滚动
   if (isAnimating) return;
   
+  // 如果搜索建议列表显示，则不处理页面切换
+  if (searchSuggestions.classList.contains("active")) return;
+  
   // 根据滚动方向切换页面
   if (event.deltaY > 0 || event.deltaX > 0) {
     // 向下或向右滚动，切换到下一页
