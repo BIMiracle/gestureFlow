@@ -153,54 +153,35 @@ function renderPageWithWrap(targetIndex, isForward) {
   } else {
     // 向后循环：在开头添加最后一页的克隆
     appGridsContainer.insertBefore(cloneWrap, appGridsContainer.firstChild);
-    // 立即跳转到克隆页面位置（无动画）
+    // 立即调整容器位置，考虑到新增的克隆页面
     appGridsContainer.style.transition = 'none';
-    appGridsContainer.style.transform = `translateX(-${100}%)`;
+    // 由于在开头添加了一个页面，所以当前页面的位置需要+1
+    appGridsContainer.style.transform = `translateX(-${(currentPageIndex + 1) * 100}%)`;
     // 强制重绘
     appGridsContainer.offsetHeight;
     // 恢复动画
     appGridsContainer.style.transition = 'transform 350ms ease-in-out';
+    // 执行动画，移动到克隆页面（最后一页的克隆，在容器的第一个位置）
+    appGridsContainer.style.transform = `translateX(0%)`;
   }
-  
-  // 延迟执行真正的跳转
+  // 动画完成后移除克隆页面并调整位置
   setTimeout(() => {
-    if (isForward) {
-      // 跳转到真正的目标页面
-      appGridsContainer.style.transition = 'none';
-      appGridsContainer.style.transform = `translateX(-${targetIndex * 100}%)`;
-      // 移除克隆页面
-      appGridsContainer.removeChild(cloneWrap);
-    } else {
-      // 跳转到真正的目标页面
-      appGridsContainer.style.transform = `translateX(-${(targetIndex + 1) * 100}%)`;
-      // 动画完成后移除克隆页面并调整位置
-      setTimeout(() => {
-        appGridsContainer.style.transition = 'none';
-        appGridsContainer.removeChild(cloneWrap);
-        appGridsContainer.style.transform = `translateX(-${targetIndex * 100}%)`;
-        // 强制重绘
-        appGridsContainer.offsetHeight;
-        // 恢复动画
-        appGridsContainer.style.transition = 'transform 350ms ease-in-out';
-        isAnimating = false;
-      }, 350);
-      
-      // 更新当前页面索引和分页点
-      currentPageIndex = targetIndex;
-      updatePaginationDots();
-      return;
-    }
-    
+    // 移除过渡效果
+    appGridsContainer.style.transition = 'none';
+    // 移除克隆页面
+    appGridsContainer.removeChild(cloneWrap);
+    // 调整到正确的位置（最后一页）
+    appGridsContainer.style.transform = `translateX(-${targetIndex * 100}%)`;
     // 强制重绘
     appGridsContainer.offsetHeight;
-    // 恢复动画
+    // 恢复动画效果
     appGridsContainer.style.transition = 'transform 350ms ease-in-out';
     
-    // 更新当前页面索引
+    // 更新当前页面索引和分页点
     currentPageIndex = targetIndex;
     updatePaginationDots();
     isAnimating = false;
-  }, isForward ? 350 : 0);
+  }, 350);
 }
 
 // 更新分页点状态
