@@ -136,15 +136,13 @@ nav {
 }
 
 main {
-  width: 100%;
-  max-width: 135.8313vmin;
-  flex-grow: 1;
+  width: 80%;
   display: flex;
   justify-content: center;
 }
 
 .app-grid {
-  width: 100%;
+  width: 90%;
   height: 60vh;
   display: grid;
   grid-template-columns: repeat(var(--icon-col), calc(100% / var(--icon-col)));
