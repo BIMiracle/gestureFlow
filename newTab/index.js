@@ -1,7 +1,7 @@
 // 获取windmill-top元素
 const windmillTop = document.querySelector(".windmill-top");
 const wallpaper = document.querySelector(".wallpaper");
-const appGrid = document.querySelector(".app-grid");
+const appGridsContainer = document.querySelector(".app-grids-container");
 const paginationDots = document.querySelector(".pagination-dots");
 
 // 记录当前旋转角度
@@ -28,6 +28,9 @@ async function loadData() {
     
     // 初始化分页点
     initPagination();
+    
+    // 初始化所有页面
+    initAllPages();
     
     // 渲染第一页
     renderPage(0);
@@ -56,6 +59,65 @@ function initPagination() {
   });
 }
 
+// 初始化所有页面
+function initAllPages() {
+  // 清空容器
+  appGridsContainer.innerHTML = "";
+  
+  // 为每一页创建一个app-grid-wrap
+  sitesData.forEach((pageSites, pageIndex) => {
+    const gridWrap = document.createElement("div");
+    gridWrap.classList.add("app-grid-wrap");
+    gridWrap.dataset.pageIndex = pageIndex;
+    
+    const grid = document.createElement("div");
+    grid.classList.add("app-grid");
+    
+    // 渲染当前页的网站
+    pageSites.forEach(site => {
+      const appItem = document.createElement("div");
+      appItem.classList.add("app-item");
+      
+      const appIcon = document.createElement("div");
+      appIcon.classList.add("app-icon");
+      
+      // 根据网站的bgType设置图标样式
+      if (site.bgType === "image" && site.bgImage) {
+        appIcon.style.backgroundImage = `url(${site.bgImage})`;
+      } else if (site.bgType === "color") {
+        appIcon.style.backgroundColor = site.bgColor || "transparent";
+        appIcon.textContent = site.bgText || "";
+      }
+      
+      // 添加特殊类名（如果有）
+      if (site.name === "Gmail") {
+        appIcon.classList.add("gmail-icon");
+      } else if (site.name.includes("小程序")) {
+        appIcon.classList.add("wechat-icon");
+      } else if (site.name.includes("热榜")) {
+        appIcon.classList.add("hot-icon");
+      } else if (site.name === "Epic Games") {
+        appIcon.classList.add("epic-icon");
+      }
+      
+      const span = document.createElement("span");
+      span.textContent = site.name;
+      
+      // 添加点击事件，跳转到目标网站
+      appItem.addEventListener("click", () => {
+        window.location.href = site.target;
+      });
+      
+      appItem.appendChild(appIcon);
+      appItem.appendChild(span);
+      grid.appendChild(appItem);
+    });
+    
+    gridWrap.appendChild(grid);
+    appGridsContainer.appendChild(gridWrap);
+  });
+}
+
 // 渲染指定页面
 function renderPage(pageIndex) {
   // 确保页面索引有效
@@ -64,49 +126,8 @@ function renderPage(pageIndex) {
   // 更新当前页面索引
   currentPageIndex = pageIndex;
   
-  // 清空网格
-  appGrid.innerHTML = "";
-  
-  // 渲染当前页的网站
-  const currentPageSites = sitesData[pageIndex];
-  currentPageSites.forEach(site => {
-    const appItem = document.createElement("div");
-    appItem.classList.add("app-item");
-    
-    const appIcon = document.createElement("div");
-    appIcon.classList.add("app-icon");
-    
-    // 根据网站的bgType设置图标样式
-    if (site.bgType === "image" && site.bgImage) {
-      appIcon.style.backgroundImage = `url(${site.bgImage})`;
-    } else if (site.bgType === "color") {
-      appIcon.style.backgroundColor = site.bgColor || "transparent";
-      appIcon.textContent = site.bgText || "";
-    }
-    
-    // 添加特殊类名（如果有）
-    if (site.name === "Gmail") {
-      appIcon.classList.add("gmail-icon");
-    } else if (site.name.includes("小程序")) {
-      appIcon.classList.add("wechat-icon");
-    } else if (site.name.includes("热榜")) {
-      appIcon.classList.add("hot-icon");
-    } else if (site.name === "Epic Games") {
-      appIcon.classList.add("epic-icon");
-    }
-    
-    const span = document.createElement("span");
-    span.textContent = site.name;
-    
-    // 添加点击事件，跳转到目标网站
-    appItem.addEventListener("click", () => {
-      window.location.href = site.target;
-    });
-    
-    appItem.appendChild(appIcon);
-    appItem.appendChild(span);
-    appGrid.appendChild(appItem);
-  });
+  // 使用transform平移到指定页面
+  appGridsContainer.style.transform = `translateX(-${pageIndex * 100}%)`;
   
   // 更新分页点状态
   updatePaginationDots();
@@ -144,11 +165,11 @@ document.addEventListener("wheel", (event) => {
   isAnimating = true;
   
   // 根据滚动方向切换页面
-  if (event.deltaY > 0) {
-    // 向下滚动，切换到下一页
+  if (event.deltaY > 0 || event.deltaX > 0) {
+    // 向下或向右滚动，切换到下一页
     navigateToPage(currentPageIndex + 1);
   } else {
-    // 向上滚动，切换到上一页
+    // 向上或向左滚动，切换到上一页
     navigateToPage(currentPageIndex - 1);
   }
   

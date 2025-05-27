@@ -137,6 +137,18 @@ nav {
 
 main {
   width: 100%;
+  overflow: hidden;
+}
+
+.app-grids-container {
+  width: 100%;
+  display: flex;
+  transition: transform 350ms ease-in-out;
+}
+
+.app-grid-wrap {
+  width: 100%;
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
 }
