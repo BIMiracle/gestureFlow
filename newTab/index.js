@@ -359,10 +359,132 @@ const navTypes = document.querySelectorAll(".nav-type");
 
 navTypes.forEach(type => {
   type.addEventListener("click", () => {
-    navTypes.forEach(t => t.classList.remove("active"));
+    navTypes.forEach(t => t.classList.add("active"));
     type.classList.add("active");
   });
 });
 
+// 搜索建议功能
+const searchInput = document.querySelector('.search-bar input');
+const searchSuggestions = document.querySelector('.search-suggestions');
+
+// 监听输入事件
+searchInput.addEventListener('input', debounce(handleInputChange, 300));
+
+// 监听焦点事件
+searchInput.addEventListener('focus', () => {
+  if (searchInput.value.trim()) {
+    showSuggestions();
+  }
+});
+
+searchInput.addEventListener('blur', () => {
+  // 使用延时，以便能够点击建议项
+  setTimeout(() => {
+    hideSuggestions();
+  }, 200);
+});
+
+// 防抖函数
+function debounce(func, delay) {
+  let timer;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      func.apply(this, args);
+    }, delay);
+  };
+}
+
+// 处理输入变化
+async function handleInputChange() {
+  const query = searchInput.value.trim();
+  
+  if (!query) {
+    hideSuggestions();
+    return;
+  }
+  
+  try {
+    const suggestions = await fetchSuggestions(query);
+    renderSuggestions(suggestions);
+    showSuggestions();
+  } catch (error) {
+    console.error('获取搜索建议失败:', error);
+  }
+}
+
+// 获取搜索建议
+async function fetchSuggestions(query) {
+  // 对查询进行编码
+  const encodedQuery = encodeURIComponent(query);
+  const url = `https://suggestion.baidu.com/su?p=3&ie=UTF-8&cb=&wd=${encodedQuery}`;
+
+  try {
+    const response = await fetch(url);
+    const text = await response.text();
+
+    // 解析返回的数据
+    // 格式: ({q:"天",p:false,s:["天气预报","天蝎座",...]})
+    // 或者 window.baidu.sug({q:"天",p:false,s:["天气预报","天蝎座",...]})
+    // 正则表达式提取括号内的内容
+    const match = text.match(/\((.*)\)/);
+    if (match && match[1]) {
+      const objectLiteralString = match[1]; // 这就是你例子中的 jsonStr，例如 '{q:"t",p:false,s:[]}'
+
+      // objectLiteralString 不是一个有效的 JSON 字符串，因为键名没有用双引号。
+      // 但它是一个有效的 JavaScript 对象字面量。
+      // 使用 new Function 将其转换为对象。
+      // 这比 eval() 更安全，因为它在受限的作用域中执行。
+      const data = (new Function('return ' + objectLiteralString))();
+
+      return data.s || [];
+    }
+    // 如果没有匹配到括号，可能需要检查返回的 text 格式是否变化
+    console.warn("Baidu suggestion response format might have changed or was unexpected:", text);
+    return [];
+  } catch (error) {
+    console.error('获取搜索建议出错:', error);
+    // 可以在这里打印 text 和 objectLiteralString (如果存在) 以便调试
+    // console.error('Original text:', text);
+    // if (typeof objectLiteralString !== 'undefined') {
+    //   console.error('Extracted objectLiteralString:', objectLiteralString);
+    // }
+    return [];
+  }
+}
+
+// 渲染搜索建议
+function renderSuggestions(suggestions) {
+  searchSuggestions.innerHTML = '';
+  
+  suggestions.forEach(suggestion => {
+    const item = document.createElement('div');
+    item.classList.add('suggestion-item');
+    item.textContent = suggestion;
+    
+    // 点击建议项填充到输入框
+    item.addEventListener('click', () => {
+      searchInput.value = suggestion;
+      hideSuggestions();
+      // 可以在这里添加搜索跳转逻辑
+    });
+    
+    searchSuggestions.appendChild(item);
+  });
+}
+
+// 显示建议列表
+function showSuggestions() {
+  searchSuggestions.classList.add('active');
+}
+
+// 隐藏建议列表
+function hideSuggestions() {
+  searchSuggestions.classList.remove('active');
+}
+
 // 页面加载完成后初始化数据
-document.addEventListener("DOMContentLoaded", loadData);
+document.addEventListener("DOMContentLoaded", () => {
+  loadData();
+});

@@ -110,6 +110,7 @@ nav {
   border-radius: 9999px;
   box-shadow: 0 0.2736vmin 1.368vmin rgba(0, 0, 0, 0.1);
   background-color: white;
+  position: relative;
 }
 .search-icon {
   display: flex;
@@ -133,6 +134,38 @@ nav {
   height: 8.4815vmin;
   line-height: 8.4815vmin;
   background-color: transparent;
+}
+
+/* 搜索建议样式 */
+.search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  border-radius: 0 0 1.368vmin 1.368vmin;
+  box-shadow: 0 0.2736vmin 1.368vmin rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  max-height: 40.8vmin;
+  overflow-y: auto;
+  display: none;
+}
+
+.search-suggestions.active {
+  display: block;
+}
+
+.suggestion-item {
+  padding: 1.368vmin 2.736vmin;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 main {
