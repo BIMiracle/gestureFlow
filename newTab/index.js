@@ -52,7 +52,9 @@ function initPagination() {
     
     // 点击分页点切换页面
     dot.addEventListener("click", () => {
-      navigateToPage(index);
+      if (!isAnimating) {
+        renderPage(index);
+      }
     });
     
     paginationDots.appendChild(dot);
@@ -133,6 +135,74 @@ function renderPage(pageIndex) {
   updatePaginationDots();
 }
 
+// 带循环效果的页面渲染
+function renderPageWithWrap(targetIndex, isForward) {
+  isAnimating = true;
+  const totalPages = sitesData.length;
+  
+  // 临时创建克隆页面用于循环动画
+  const cloneWrap = document.createElement('div');
+  cloneWrap.classList.add('app-grid-wrap');
+  cloneWrap.innerHTML = appGridsContainer.children[isForward ? 0 : totalPages - 1].innerHTML;
+  
+  if (isForward) {
+    // 向前循环：在末尾添加第一页的克隆
+    appGridsContainer.appendChild(cloneWrap);
+    // 先移动到克隆页面
+    appGridsContainer.style.transform = `translateX(-${totalPages * 100}%)`;
+  } else {
+    // 向后循环：在开头添加最后一页的克隆
+    appGridsContainer.insertBefore(cloneWrap, appGridsContainer.firstChild);
+    // 立即跳转到克隆页面位置（无动画）
+    appGridsContainer.style.transition = 'none';
+    appGridsContainer.style.transform = `translateX(-${100}%)`;
+    // 强制重绘
+    appGridsContainer.offsetHeight;
+    // 恢复动画
+    appGridsContainer.style.transition = 'transform 350ms ease-in-out';
+  }
+  
+  // 延迟执行真正的跳转
+  setTimeout(() => {
+    if (isForward) {
+      // 跳转到真正的目标页面
+      appGridsContainer.style.transition = 'none';
+      appGridsContainer.style.transform = `translateX(-${targetIndex * 100}%)`;
+      // 移除克隆页面
+      appGridsContainer.removeChild(cloneWrap);
+    } else {
+      // 跳转到真正的目标页面
+      appGridsContainer.style.transform = `translateX(-${(targetIndex + 1) * 100}%)`;
+      // 动画完成后移除克隆页面并调整位置
+      setTimeout(() => {
+        appGridsContainer.style.transition = 'none';
+        appGridsContainer.removeChild(cloneWrap);
+        appGridsContainer.style.transform = `translateX(-${targetIndex * 100}%)`;
+        // 强制重绘
+        appGridsContainer.offsetHeight;
+        // 恢复动画
+        appGridsContainer.style.transition = 'transform 350ms ease-in-out';
+        isAnimating = false;
+      }, 350);
+      
+      // 更新当前页面索引和分页点
+      currentPageIndex = targetIndex;
+      updatePaginationDots();
+      return;
+    }
+    
+    // 强制重绘
+    appGridsContainer.offsetHeight;
+    // 恢复动画
+    appGridsContainer.style.transition = 'transform 350ms ease-in-out';
+    
+    // 更新当前页面索引
+    currentPageIndex = targetIndex;
+    updatePaginationDots();
+    isAnimating = false;
+  }, isForward ? 350 : 0);
+}
+
 // 更新分页点状态
 function updatePaginationDots() {
   const dots = paginationDots.querySelectorAll(".dot");
@@ -147,22 +217,36 @@ function updatePaginationDots() {
 
 // 导航到指定页面
 function navigateToPage(pageIndex) {
-  // 确保页面索引有效
+  // 如果正在动画中，不执行新的导航
+  if (isAnimating) return;
+  
+  const totalPages = sitesData.length;
+  let targetIndex = pageIndex;
+  
+  // 处理边界情况
   if (pageIndex < 0) {
-    pageIndex = sitesData.length - 1;
-  } else if (pageIndex >= sitesData.length) {
-    pageIndex = 0;
+    targetIndex = totalPages - 1;
+  } else if (pageIndex >= totalPages) {
+    targetIndex = 0;
   }
   
-  // 渲染页面
-  renderPage(pageIndex);
+  // 检查是否需要循环动画
+  const isWrappingForward = currentPageIndex === totalPages - 1 && targetIndex === 0;
+  const isWrappingBackward = currentPageIndex === 0 && targetIndex === totalPages - 1;
+  
+  if (isWrappingForward || isWrappingBackward) {
+    // 使用循环动画
+    renderPageWithWrap(targetIndex, isWrappingForward);
+  } else {
+    // 使用普通动画
+    renderPage(targetIndex);
+  }
 }
 
 // 添加鼠标滚轮事件监听
 document.addEventListener("wheel", (event) => {
   // 防止过快滚动
   if (isAnimating) return;
-  isAnimating = true;
   
   // 根据滚动方向切换页面
   if (event.deltaY > 0 || event.deltaX > 0) {
@@ -175,7 +259,9 @@ document.addEventListener("wheel", (event) => {
   
   // 设置一个短暂的延迟，防止连续滚动
   setTimeout(() => {
-    isAnimating = false;
+    if (!isAnimating) {
+      isAnimating = false;
+    }
   }, 500);
 });
 
