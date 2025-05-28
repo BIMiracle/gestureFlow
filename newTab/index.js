@@ -230,7 +230,7 @@ document.addEventListener("wheel", (event) => {
   if (isAnimating) return;
   
   // 如果搜索建议列表显示，则不处理页面切换
-  if (searchSuggestions.classList.contains("active")) return;
+  if (searchSuggestionsWrap.classList.contains("active")) return;
   
   // 根据滚动方向切换页面
   if (event.deltaY > 0 || event.deltaX > 0) {
@@ -369,7 +369,6 @@ navTypes.forEach(type => {
 
 // 搜索建议功能
 const searchInput = document.querySelector('.search-bar input');
-const searchSuggestions = document.querySelector('.search-suggestions');
 
 // 监听输入事件
 searchInput.addEventListener('input', debounce(handleInputChange, 300));
@@ -457,6 +456,9 @@ async function fetchSuggestions(query) {
   }
 }
 
+const searchSuggestionsWrap = document.querySelector('.search-suggestions-wrap');
+const searchSuggestions = document.querySelector('.search-suggestions');
+
 // 渲染搜索建议
 function renderSuggestions(suggestions) {
   searchSuggestions.innerHTML = '';
@@ -479,12 +481,12 @@ function renderSuggestions(suggestions) {
 
 // 显示建议列表
 function showSuggestions() {
-  searchSuggestions.classList.add('active');
+  searchSuggestionsWrap.classList.add('active');
 }
 
 // 隐藏建议列表
 function hideSuggestions() {
-  searchSuggestions.classList.remove('active');
+  searchSuggestionsWrap.classList.remove('active');
 }
 
 // 页面加载完成后初始化数据

@@ -136,23 +136,31 @@ nav {
   background-color: transparent;
 }
 
-/* 搜索建议样式 */
-.search-suggestions {
+.search-suggestions-wrap {
   position: absolute;
   top: 100%;
   left: 0;
   width: 100%;
   background-color: white;
-  border-radius: 0 0 1.368vmin 1.368vmin;
+  border-radius: 3vmin;
   box-shadow: 0 0.2736vmin 1.368vmin rgba(0, 0, 0, 0.1);
   z-index: 10;
-  max-height: 40.8vmin;
-  overflow-y: auto;
   display: none;
+  overflow: hidden;
+  margin-top: 1vmin;
+  height: 40.8vmin;
 }
 
-.search-suggestions.active {
+.search-suggestions-wrap.active {
   display: block;
+}
+
+.search-suggestions {
+  height: 100%; /* 撑满 wrapper */
+  overflow-y: auto; /* 滚动条在此元素上 */
+  /* 为滚动条预留空间，这里的 padding 不会影响 wrapper 的圆角 */
+  margin-right: 1vmin; /* 或其他足够的值 */
+  box-sizing: border-box;
 }
 
 .suggestion-item {
@@ -323,7 +331,6 @@ footer {
   width: 5.472vmin;
   height: 5.472vmin;
   display: block;
-  /* transition: transform 0.3s ease; */
   transform: rotate(0deg);
   cursor: pointer;
 }
