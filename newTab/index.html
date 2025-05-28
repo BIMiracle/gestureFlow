@@ -1,48 +1,52 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>新标签页</title>
-    <link rel="stylesheet" href="index.css">
-</head>
-<body>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
     <div class="wallpaper">
-        <div class="wallpaper-mask"></div>
+      <div class="wallpaper-mask"></div>
     </div>
     <div class="container">
-        <header>
-            <nav>
-                <div class="nav-links">
-                    <div class="nav-type active">网页</div>
-                    <div class="nav-type">图片</div>
-                    <div class="nav-type">地图</div>
-                </div>
-                <div class="menu-icon">☰</div>
-            </nav>
-            <div class="search-bar">
-                <div class="search-icon"></div>
-                <input type="text" placeholder="输入并搜索">
-                <div class="search-suggestions-wrap">
-                    <div class="search-suggestions"></div>
-                </div>
-            </div>
-        </header>
-        <main>
-            <div class="app-grids-container">
-                <!-- 多个app-grid-wrap将由JavaScript动态生成 -->
-            </div>
-        </main>
-        <div class="pagination-dots">
-            <!-- 分页点将由JavaScript动态生成 -->
+      <header>
+        <nav>
+          <div class="nav-links">
+            <div class="nav-type active">网页</div>
+            <div class="nav-type">图片</div>
+            <div class="nav-type">地图</div>
+          </div>
+          <div class="menu-icon">☰</div>
+        </nav>
+        <div class="search-bar">
+          <div class="search-icon"></div>
+          <input type="text" placeholder="输入并搜索" />
+          <div class="search-suggestions-wrap">
+            <div class="search-suggestions"></div>
+          </div>
         </div>
-        <footer>
-            <div class="windmill-container">
-                <img src="../images/windmill.svg" alt="Windmill" class="windmill-top">
-                <span class="windmill-stalk"></span>
-            </div>
-        </footer>
+      </header>
+      <main>
+        <div class="app-grids-container">
+          <!-- 多个app-grid-wrap将由JavaScript动态生成 -->
+        </div>
+      </main>
+      <div class="pagination-dots">
+        <!-- 分页点将由JavaScript动态生成 -->
+      </div>
+      <footer>
+        <div class="windmill-container">
+          <img
+            src="../images/windmill.svg"
+            alt="Windmill"
+            class="windmill-top"
+          />
+          <span class="windmill-stalk"></span>
+        </div>
+      </footer>
     </div>
     <script src="index.js"></script>
-</body>
+  </body>
 </html>
