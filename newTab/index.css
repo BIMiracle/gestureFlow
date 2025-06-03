@@ -232,6 +232,9 @@ main {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
 }
 
 .app-icon:hover {
