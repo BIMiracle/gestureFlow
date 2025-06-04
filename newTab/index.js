@@ -382,32 +382,99 @@
 
   // 搜索建议功能
   const searchInput = document.querySelector(".search-bar input");
+  let selectedSuggestionIndex = -1; // 当前选中的建议索引，-1表示没有选中
+  let originalInputValue = ""; // 保存原始输入内容
+  let currentSuggestions = []; // 保存当前的建议列表
 
   // 监听输入事件
   searchInput.addEventListener("input", debounce(handleInputChange, 300));
 
   searchInput.addEventListener("keydown", function (event) {
-    console.log(navTypes);
-
-    // 检查是否按下了回车键
-    if (event.key === "Enter" || event.keyCode === 13) {
-      // 阻止可能的默认行为 (例如，如果input在一个form中，会提交表单)
-      event.preventDefault();
-      const value = searchInput.value.trim();
-      if (!value) return;
-
-      const activeNavElement = document.querySelector(".nav-type.active");
-      if (activeNavElement) {
-        const activeNavType = activeNavElement.textContent.trim();
-        if (activeNavType === "网页") {
-          console.log(`准备跳转到网页搜索: ${searchValue}`);
+    // 如果建议列表显示，处理键盘导航
+    if (
+      searchSuggestionsWrap.classList.contains("active") &&
+      currentSuggestions.length > 0
+    ) {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        if (selectedSuggestionIndex < currentSuggestions.length - 1) {
+          selectedSuggestionIndex++;
+          updateSelectedSuggestion();
+        } else {
+          // 在最后一个建议时按下键，回到原始输入
+          selectedSuggestionIndex = -1;
+          searchInput.value = originalInputValue;
+          updateSelectedSuggestion();
+        }
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        if (selectedSuggestionIndex > 0) {
+          selectedSuggestionIndex--;
+          updateSelectedSuggestion();
+        } else if (selectedSuggestionIndex === 0) {
+          // 在第一个建议时按上键，回到原始输入
+          selectedSuggestionIndex = -1;
+          searchInput.value = originalInputValue;
+          updateSelectedSuggestion();
+        } else {
+          // 当前没有选中任何建议，选中最后一个
+          selectedSuggestionIndex = currentSuggestions.length - 1;
+          updateSelectedSuggestion();
+        }
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        if (selectedSuggestionIndex >= 0) {
+          // 有选中的建议，直接跳转
+          const selectedSuggestion =
+            currentSuggestions[selectedSuggestionIndex];
+          hideSuggestions();
           location.href = `https://www.baidu.com/s?wd=${encodeURIComponent(
-            value
+            selectedSuggestion
           )}`;
-        } else if (activeNavType === "图片") {
-          location.href = `https://image.baidu.com/search/index?word=${encodeURIComponent(
-            value
-          )}`;
+          return;
+        }
+        // 没有选中建议，使用当前输入框的值
+        const value = searchInput.value.trim();
+        if (!value) return;
+
+        const activeNavElement = document.querySelector(".nav-type.active");
+        if (activeNavElement) {
+          const activeNavType = activeNavElement.textContent.trim();
+          if (activeNavType === "网页") {
+            location.href = `https://www.baidu.com/s?wd=${encodeURIComponent(
+              value
+            )}`;
+          } else if (activeNavType === "图片") {
+            location.href = `https://image.baidu.com/search/index?word=${encodeURIComponent(
+              value
+            )}`;
+          }
+        }
+      } else if (event.key === "Escape") {
+        // ESC键隐藏建议列表
+        event.preventDefault();
+        hideSuggestions();
+        selectedSuggestionIndex = -1;
+      }
+    } else {
+      // 建议列表未显示时的回车处理
+      if (event.key === "Enter" || event.keyCode === 13) {
+        event.preventDefault();
+        const value = searchInput.value.trim();
+        if (!value) return;
+
+        const activeNavElement = document.querySelector(".nav-type.active");
+        if (activeNavElement) {
+          const activeNavType = activeNavElement.textContent.trim();
+          if (activeNavType === "网页") {
+            location.href = `https://www.baidu.com/s?wd=${encodeURIComponent(
+              value
+            )}`;
+          } else if (activeNavType === "图片") {
+            location.href = `https://image.baidu.com/search/index?word=${encodeURIComponent(
+              value
+            )}`;
+          }
         }
       }
     }
@@ -445,22 +512,27 @@
   // 处理输入变化
   async function handleInputChange() {
     const query = searchInput.value.trim();
+    originalInputValue = query; // 保存原始输入内容
+    selectedSuggestionIndex = -1; // 重置选中索引
 
     if (!query) {
       hideSuggestions();
+      currentSuggestions = [];
       return;
     }
 
     try {
       const suggestions = await fetchSuggestions(query);
-      renderSuggestions(suggestions);
-      if (suggestions.length) {
+      currentSuggestions = suggestions || [];
+      renderSuggestions(currentSuggestions);
+      if (currentSuggestions.length) {
         showSuggestions();
       } else {
         hideSuggestions();
       }
     } catch (error) {
       console.error("获取搜索建议失败:", error);
+      currentSuggestions = [];
     }
   }
 
@@ -512,10 +584,11 @@
   function renderSuggestions(suggestions) {
     searchSuggestions.innerHTML = "";
 
-    suggestions.forEach((suggestion) => {
+    suggestions.forEach((suggestion, index) => {
       const item = document.createElement("div");
       item.classList.add("suggestion-item");
       item.textContent = suggestion;
+      item.dataset.index = index;
 
       // 点击建议项填充到输入框
       item.addEventListener("click", () => {
@@ -526,7 +599,29 @@
         )}`;
       });
 
+      // 鼠标悬停时更新选中状态
+      item.addEventListener("mouseenter", () => {
+        selectedSuggestionIndex = index;
+        updateSelectedSuggestion();
+      });
+
       searchSuggestions.appendChild(item);
+    });
+  }
+
+  // 更新选中的建议项
+  function updateSelectedSuggestion() {
+    const items = searchSuggestions.querySelectorAll(".suggestion-item");
+    items.forEach((item, index) => {
+      if (index === selectedSuggestionIndex) {
+        item.classList.add("selected");
+        // 更新输入框内容为选中的建议
+        if (selectedSuggestionIndex >= 0) {
+          searchInput.value = currentSuggestions[selectedSuggestionIndex];
+        }
+      } else {
+        item.classList.remove("selected");
+      }
     });
   }
 
@@ -538,6 +633,7 @@
   // 隐藏建议列表
   function hideSuggestions() {
     searchSuggestionsWrap.classList.remove("active");
+    selectedSuggestionIndex = -1;
   }
 
   // 页面加载完成后初始化数据

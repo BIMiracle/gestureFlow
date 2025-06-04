@@ -148,7 +148,8 @@ nav {
   display: none;
   overflow: hidden;
   margin-top: 1vmin;
-  height: 40.8vmin;
+  /* max-height: 40.8vmin; */
+  font-size: var(--item-font-size);
 }
 
 .search-suggestions-wrap.active {
@@ -174,6 +175,11 @@ nav {
 
 .suggestion-item:hover {
   background-color: rgba(0, 0, 0, 0.05);
+}
+
+.suggestion-item.selected {
+  background-color: rgba(0, 123, 255, 0.1);
+  color: #007bff;
 }
 
 main {
