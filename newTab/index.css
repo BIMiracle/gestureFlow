@@ -157,15 +157,16 @@ nav {
 }
 
 .search-suggestions {
-  height: 100%; /* 撑满 wrapper */
-  overflow-y: auto; /* 滚动条在此元素上 */
+  height: 100%;
+  /* 滚动条在此元素上 */
+  overflow-y: auto;
   /* 为滚动条预留空间，这里的 padding 不会影响 wrapper 的圆角 */
-  margin-right: 1vmin; /* 或其他足够的值 */
+  /* margin-right: 1vmin; */
   box-sizing: border-box;
 }
 
 .suggestion-item {
-  padding: 1.368vmin 2.736vmin;
+  padding: 1.368vmin 2.736vmin 1.368vmin 8vmin;
   cursor: pointer;
   transition: background-color 0.2s;
   white-space: nowrap;
@@ -381,8 +382,9 @@ footer {
   --icon-size: 13.6799vmin;
   --icon-font-size: 2.736vmin;
   --search-font-size: clamp(16px, 2.4624vmin, 18px);
-  --item-icon-font-size: clamp(30px, 4.3776vmin, 32px);
+  --item-icon-font-size: clamp(24px, 4.3776vmin, 32px);
   --item-font-size: clamp(12px, 1.9152vmin, 14px);
+  --item-font-size: clamp(14px, 2.1888vmin, 16px);
 }
 
 @media screen and (max-width: 88.9193vmin) {

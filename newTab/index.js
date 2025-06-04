@@ -599,12 +599,6 @@
         )}`;
       });
 
-      // 鼠标悬停时更新选中状态
-      item.addEventListener("mouseenter", () => {
-        selectedSuggestionIndex = index;
-        updateSelectedSuggestion();
-      });
-
       searchSuggestions.appendChild(item);
     });
   }
