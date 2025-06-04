@@ -103,13 +103,51 @@
           appIcon.classList.add("epic-icon");
         }
 
+        // 创建删除按钮
+        const deleteBtn = document.createElement("div");
+        deleteBtn.classList.add("delete-btn");
+        deleteBtn.innerHTML = "×";
+        deleteBtn.style.display = "none";
+
+        // 创建编辑按钮
+        const editBtn = document.createElement("div");
+        editBtn.classList.add("edit-btn");
+        editBtn.innerHTML = "✎";
+        editBtn.style.display = "none";
+
         const span = document.createElement("span");
         span.textContent = site.name;
 
         // 添加点击事件，跳转到目标网站
-        appIcon.addEventListener("click", () => {
-          window.location.href = site.target;
+        appIcon.addEventListener("click", (e) => {
+          if (!appIcon.classList.contains("editing")) {
+            window.location.href = site.target;
+          }
         });
+
+        // 添加右键事件，进入编辑模式
+        appIcon.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          enterEditMode(appIcon, deleteBtn, editBtn);
+        });
+
+        // 删除按钮点击事件
+        deleteBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (confirm(`确定要删除 ${site.name} 吗？`)) {
+            appItem.remove();
+          }
+        });
+
+        // 编辑按钮点击事件
+        editBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          alert("编辑功能待实现");
+        });
+
+        // 将按钮添加到appIcon中
+        appIcon.appendChild(deleteBtn);
+        appIcon.appendChild(editBtn);
 
         appItem.appendChild(appIcon);
         appItem.appendChild(span);
@@ -629,6 +667,45 @@
     searchSuggestionsWrap.classList.remove("active");
     selectedSuggestionIndex = -1;
   }
+
+  // 进入编辑模式
+  function enterEditMode(appIcon, deleteBtn, editBtn) {
+    // 先退出所有其他编辑模式
+    exitAllEditModes();
+
+    // 进入当前编辑模式
+    appIcon.classList.add("editing");
+    deleteBtn.style.display = "block";
+    editBtn.style.display = "block";
+  }
+
+  // 退出所有编辑模式
+  function exitAllEditModes() {
+    const editingIcons = document.querySelectorAll(".app-icon.editing");
+    editingIcons.forEach((icon) => {
+      icon.classList.remove("editing");
+      const deleteBtn = icon.querySelector(".delete-btn");
+      const editBtn = icon.querySelector(".edit-btn");
+      if (deleteBtn) deleteBtn.style.display = "none";
+      if (editBtn) editBtn.style.display = "none";
+    });
+  }
+
+  // 添加全局点击事件监听器，点击其他区域退出编辑模式
+  document.addEventListener("click", (e) => {
+    // 如果点击的不是app-icon或其子元素，则退出编辑模式
+    if (!e.target.closest(".app-icon")) {
+      exitAllEditModes();
+    }
+  });
+
+  // 添加全局右键事件监听器，点击其他区域退出编辑模式
+  document.addEventListener("contextmenu", (e) => {
+    // 如果右键点击的不是app-icon，则退出编辑模式
+    if (!e.target.closest(".app-icon")) {
+      exitAllEditModes();
+    }
+  });
 
   // 页面加载完成后初始化数据
   loadData();

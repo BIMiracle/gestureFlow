@@ -234,7 +234,7 @@ main {
   font-weight: bold;
   cursor: pointer;
   white-space: nowrap;
-  overflow: hidden;
+  /* overflow: hidden; */
   text-overflow: clip;
   background-position: center;
   background-repeat: no-repeat;
@@ -242,6 +242,7 @@ main {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
+  position: relative;
 }
 
 .app-icon:hover {
@@ -320,6 +321,64 @@ main {
   font-size: var(--item-font-size);
   cursor: default;
   user-select: none;
+}
+
+/* 删除按钮样式 */
+.delete-btn {
+  position: absolute;
+  top: -0.5vmin;
+  right: -0.5vmin;
+  width: 3vmin;
+  height: 3vmin;
+  background-color: #ff4444;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2vmin;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 0.2vmin 0.5vmin rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  background-color: #ff0000;
+  transform: scale(1.1);
+}
+
+/* 编辑按钮样式 */
+.edit-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4vmin;
+  height: 4vmin;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5vmin;
+  cursor: pointer;
+  z-index: 9;
+  box-shadow: 0 0.2vmin 0.5vmin rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.edit-btn:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* 编辑模式下的app-icon样式 */
+.app-icon.editing {
+  animation: none;
+  filter: brightness(0.7);
 }
 
 footer {
