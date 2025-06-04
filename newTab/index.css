@@ -149,7 +149,7 @@ nav {
   overflow: hidden;
   margin-top: 1vmin;
   /* max-height: 40.8vmin; */
-  font-size: var(--item-font-size);
+  font-size: var(--font-16);
 }
 
 .search-suggestions-wrap.active {
@@ -384,7 +384,7 @@ footer {
   --search-font-size: clamp(16px, 2.4624vmin, 18px);
   --item-icon-font-size: clamp(24px, 4.3776vmin, 32px);
   --item-font-size: clamp(12px, 1.9152vmin, 14px);
-  --item-font-size: clamp(14px, 2.1888vmin, 16px);
+  --font-16: clamp(14px, 2.1888vmin, 16px);
 }
 
 @media screen and (max-width: 88.9193vmin) {
