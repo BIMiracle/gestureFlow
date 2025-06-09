@@ -719,11 +719,15 @@
   // 打开弹窗
   function openModal() {
     modalOverlay.classList.add("show");
+    // 让app-grids-container向左移动，使app-item能完全显示
+    appGridsContainer.style.marginLeft = "-20vmin";
   }
 
   // 关闭弹窗
   function closeModal() {
     modalOverlay.classList.remove("show");
+    // 复原app-grids-container的位置
+    appGridsContainer.style.marginLeft = "0";
   }
 
   // menu-icon点击事件

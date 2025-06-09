@@ -268,7 +268,7 @@ main {
 .app-grids-container {
   width: 100%;
   display: flex;
-  transition: transform 350ms ease-in-out;
+  transition: transform 350ms ease-in-out, margin-left 350ms ease-in-out;
 }
 
 .app-grid-wrap {
