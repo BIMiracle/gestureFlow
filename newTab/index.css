@@ -100,6 +100,84 @@ nav {
   border-radius: 50%;
 }
 
+/* 弹窗样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-panel {
+  position: absolute;
+  top: 0;
+  right: -40vmin;
+  width: 40vmin;
+  height: 100%;
+  background-color: white;
+  box-shadow: -0.5vmin 0 2vmin rgba(0, 0, 0, 0.3);
+  transition: right 0.3s ease;
+  overflow-y: auto;
+}
+
+.modal-overlay.show .modal-panel {
+  right: 0;
+}
+
+.modal-header {
+  padding: 2vmin;
+  border-bottom: 0.1vmin solid #eee;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.close-btn {
+  width: 4vmin;
+  height: 4vmin;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.5vmin;
+  font-weight: bold;
+  color: #666;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.close-btn:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.modal-content {
+  padding: 2vmin;
+}
+
+.modal-content h3 {
+  margin: 0 0 1.5vmin 0;
+  color: #333;
+  font-size: 2.5vmin;
+}
+
+.modal-content p {
+  margin: 0;
+  color: #666;
+  font-size: 1.8vmin;
+  line-height: 1.5;
+}
+
 .search-bar {
   width: 100%;
   max-width: 84.8153vmin;
@@ -185,7 +263,6 @@ nav {
 
 main {
   width: 100%;
-  overflow: hidden;
 }
 
 .app-grids-container {
@@ -326,27 +403,46 @@ main {
 /* 删除按钮样式 */
 .delete-btn {
   position: absolute;
-  top: -0.5vmin;
-  right: -0.5vmin;
-  width: 3vmin;
-  height: 3vmin;
-  background-color: #ff4444;
-  color: white;
+  top: 0;
+  right: 0;
+  width: 2.5vmin;
+  height: 2.5vmin;
+  background-color: rgba(255, 255, 255, 0.8);
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2vmin;
-  font-weight: bold;
   cursor: pointer;
   z-index: 10;
-  box-shadow: 0 0.2vmin 0.5vmin rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0.1vmin 0.3vmin rgba(0, 0, 0, 0.4);
   transition: all 0.2s ease;
+  border: 0.2vmin solid white;
+}
+
+.delete-btn::before,
+.delete-btn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1.2vmin;
+  height: 0.2vmin;
+  background-color: #ff0000;
+  transform-origin: center;
+}
+
+.delete-btn::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.delete-btn::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
 }
 
 .delete-btn:hover {
-  background-color: #ff0000;
-  transform: scale(1.1);
+  transform: scale(1.15);
+}
+
+.delete-btn:hover::before,
+.delete-btn:hover::after {
+  background-color: #cc0000;
 }
 
 /* 编辑按钮样式 */
@@ -355,30 +451,41 @@ main {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 4vmin;
-  height: 4vmin;
-  background-color: rgba(0, 0, 0, 0.7);
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.4);
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5vmin;
+  font-size: 2vmin;
   cursor: pointer;
   z-index: 9;
-  box-shadow: 0 0.2vmin 0.5vmin rgba(0, 0, 0, 0.3);
-  transition: all 0.2s ease;
+  /* box-shadow: 0 0.1vmin 0.3vmin rgba(0, 0, 0, 0.4); */
+  transition: opacity 0.3s;
+  /* border: 0.15vmin solid rgba(255, 255, 255, 0.3); */
+  opacity: 0;
+}
+
+.edit-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40%;
+  height: 40%;
 }
 
 .edit-btn:hover {
-  background-color: rgba(0, 0, 0, 0.9);
-  transform: translate(-50%, -50%) scale(1.1);
+  /* transform: translate(-50%, -50%) scale(1.1); */
+  /* border-color: rgba(255, 255, 255, 0.6); */
+  opacity: 1;
 }
 
 /* 编辑模式下的app-icon样式 */
 .app-icon.editing {
   animation: none;
-  filter: brightness(0.7);
 }
 
 footer {

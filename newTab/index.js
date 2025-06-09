@@ -106,13 +106,12 @@
         // 创建删除按钮
         const deleteBtn = document.createElement("div");
         deleteBtn.classList.add("delete-btn");
-        deleteBtn.innerHTML = "×";
         deleteBtn.style.display = "none";
 
         // 创建编辑按钮
         const editBtn = document.createElement("div");
         editBtn.classList.add("edit-btn");
-        editBtn.innerHTML = "✎";
+        editBtn.innerHTML = `<img draggable="false" class="edit-icon" alt="" src="../images/edit.png">`;
         editBtn.style.display = "none";
 
         const span = document.createElement("span");
@@ -673,10 +672,15 @@
     // 先退出所有其他编辑模式
     exitAllEditModes();
 
-    // 进入当前编辑模式
-    appIcon.classList.add("editing");
-    deleteBtn.style.display = "block";
-    editBtn.style.display = "block";
+    // 让所有appIcon都进入编辑模式
+    const allAppIcons = document.querySelectorAll(".app-icon");
+    allAppIcons.forEach((icon) => {
+      icon.classList.add("editing");
+      const iconDeleteBtn = icon.querySelector(".delete-btn");
+      const iconEditBtn = icon.querySelector(".edit-btn");
+      if (iconDeleteBtn) iconDeleteBtn.style.display = "block";
+      if (iconEditBtn) iconEditBtn.style.display = "block";
+    });
   }
 
   // 退出所有编辑模式
@@ -704,6 +708,40 @@
     // 如果右键点击的不是app-icon，则退出编辑模式
     if (!e.target.closest(".app-icon")) {
       exitAllEditModes();
+    }
+  });
+
+  // 弹窗控制逻辑
+  const menuIcon = document.querySelector(".menu-icon");
+  const modalOverlay = document.getElementById("modalOverlay");
+  const closeBtn = document.getElementById("closeBtn");
+
+  // 打开弹窗
+  function openModal() {
+    modalOverlay.classList.add("show");
+  }
+
+  // 关闭弹窗
+  function closeModal() {
+    modalOverlay.classList.remove("show");
+  }
+
+  // menu-icon点击事件
+  menuIcon.addEventListener("click", (e) => {
+    e.stopPropagation();
+    openModal();
+  });
+
+  // 关闭按钮点击事件
+  closeBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    closeModal();
+  });
+
+  // 点击遮罩层关闭弹窗
+  modalOverlay.addEventListener("click", (e) => {
+    if (e.target === modalOverlay) {
+      closeModal();
     }
   });
 
