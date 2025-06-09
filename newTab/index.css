@@ -179,13 +179,14 @@ nav {
 /* 主要功能按钮样式 */
 .main-actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 1.5vmin;
   margin-bottom: 2vmin;
 }
 
 .action-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
   padding: 2vmin;
   border-radius: 1vmin;
@@ -193,11 +194,27 @@ nav {
   cursor: pointer;
   transition: all 0.2s ease;
   border: 0.1vmin solid #e9ecef;
+  flex: 1;
+  text-align: center;
 }
 
 .action-item:hover {
   background-color: #e9ecef;
   transform: translateY(-0.1vmin);
+}
+
+.action-item.active {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.action-item.active .action-icon {
+  background-color: white;
+  color: #007bff;
+}
+
+.action-item.active span {
+  color: white;
 }
 
 .action-icon {
@@ -211,7 +228,7 @@ nav {
   justify-content: center;
   font-size: 2vmin;
   font-weight: bold;
-  margin-right: 1.5vmin;
+  margin-bottom: 1vmin;
 }
 
 .action-item span {

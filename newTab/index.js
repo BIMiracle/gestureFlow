@@ -741,12 +741,29 @@
   function showMainActions() {
     mainActions.style.display = "flex";
     settingsPanel.style.display = "none";
+    // 默认选中设置功能
+    setActiveTab('settings');
   }
 
   // 显示设置面板
   function showSettingsPanel() {
-    mainActions.style.display = "none";
+    mainActions.style.display = "flex";
     settingsPanel.style.display = "block";
+    setActiveTab('settings');
+  }
+
+  // 设置活跃标签
+  function setActiveTab(tabName) {
+    // 移除所有active类
+    addBtn.classList.remove('active');
+    settingsBtn.classList.remove('active');
+    
+    // 添加对应的active类
+    if (tabName === 'add') {
+      addBtn.classList.add('active');
+    } else if (tabName === 'settings') {
+      settingsBtn.classList.add('active');
+    }
   }
 
   // menu-icon点击事件
@@ -764,8 +781,17 @@
   // 添加按钮点击事件
   addBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-    alert("添加功能待实现");
+    showAddPanel();
   });
+
+  // 显示添加面板
+  function showAddPanel() {
+    mainActions.style.display = "flex";
+    settingsPanel.style.display = "none";
+    setActiveTab('add');
+    // 这里可以添加显示添加内容的逻辑
+    alert("添加功能待实现");
+  }
 
   // 设置按钮点击事件
   settingsBtn.addEventListener("click", (e) => {
@@ -776,7 +802,9 @@
   // 返回按钮点击事件
   backBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-    showMainActions();
+    // 隐藏设置面板，保持main-actions显示，默认选中设置
+    settingsPanel.style.display = "none";
+    setActiveTab('settings');
   });
 
   // 点击遮罩层关闭弹窗
@@ -850,20 +878,23 @@
 
   blurSlider.addEventListener("input", (e) => {
     const value = e.target.value;
-    const percentage = Math.round((value / 20) * 100);
-    console.log(percentage);
-
+    const percentage = parseInt(value);
     blurValue.textContent = `${percentage}%`;
 
-    // 设置CSS变量来控制模糊度
+    // 设置CSS变量来控制模糊度，将百分比转换为像素值
+    const blurPixels = (percentage / 100) * 20; // 最大20px模糊
     document.documentElement.style.setProperty(
       "--wallpaper-filter",
-      `${value}px`
+      `${blurPixels}px`
     );
   });
 
   // 初始化CSS变量
-  document.documentElement.style.setProperty("--wallpaper-filter", "2px");
+  const initialBlurPixels = (10 / 100) * 20; // 初始值10%对应2px
+  document.documentElement.style.setProperty(
+    "--wallpaper-filter",
+    `${initialBlurPixels}px`
+  );
 
   // 页面加载完成后初始化数据
   loadData();
