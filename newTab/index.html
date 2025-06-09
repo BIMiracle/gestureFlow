@@ -29,8 +29,88 @@
               <div class="close-btn" id="closeBtn">×</div>
             </div>
             <div class="modal-content">
-              <h3>设置</h3>
-              <p>这里是弹窗内容</p>
+              <!-- 主要功能按钮 -->
+              <div class="main-actions">
+                <div class="action-item" id="addBtn">
+                  <div class="action-icon">+</div>
+                  <span>添加</span>
+                </div>
+                <div class="action-item" id="settingsBtn">
+                  <div class="action-icon">⚙</div>
+                  <span>设置</span>
+                </div>
+              </div>
+
+              <!-- 设置面板 -->
+              <div
+                class="settings-panel"
+                id="settingsPanel"
+                style="display: none"
+              >
+                <div class="settings-header">
+                  <div class="back-btn" id="backBtn">←</div>
+                  <h3>设置</h3>
+                </div>
+
+                <!-- 模式选择 -->
+                <div class="mode-selection">
+                  <div class="mode-option active" data-mode="standard">
+                    <span>标准模式</span>
+                  </div>
+                  <div class="mode-option" data-mode="minimal">
+                    <span>极简模式</span>
+                  </div>
+                </div>
+
+                <!-- 标准模式设置 -->
+                <div class="standard-settings" id="standardSettings">
+                  <div class="setting-group">
+                    <h4>壁纸</h4>
+                    <div class="wallpaper-preview">
+                      <img
+                        id="wallpaperPreview"
+                        src="../images/6979.webp"
+                        alt="当前壁纸"
+                      />
+                      <div class="wallpaper-actions">
+                        <button class="wallpaper-btn" id="changeWallpaperBtn">
+                          更换壁纸
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="setting-group">
+                    <h4>遮罩浓度</h4>
+                    <div class="slider-container">
+                      <input
+                        type="range"
+                        id="maskOpacitySlider"
+                        min="0"
+                        max="100"
+                        value="40"
+                        class="slider"
+                      />
+                      <span class="slider-value">40%</span>
+                    </div>
+                  </div>
+
+                  <div class="setting-group">
+                    <h4>模糊度</h4>
+                    <div class="slider-container">
+                      <input
+                        type="range"
+                        id="blurSlider"
+                        min="0"
+                        max="20"
+                        value="2"
+                        class="slider"
+                      />
+                      <span class="slider-value">10%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

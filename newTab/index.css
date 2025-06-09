@@ -17,8 +17,6 @@ html {
 }
 
 .wallpaper {
-  width: 100%;
-  height: 100%;
   position: absolute;
   z-index: -1;
   background-size: cover;
@@ -176,6 +174,211 @@ nav {
   color: #666;
   font-size: 1.8vmin;
   line-height: 1.5;
+}
+
+/* 主要功能按钮样式 */
+.main-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5vmin;
+  margin-bottom: 2vmin;
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  padding: 2vmin;
+  border-radius: 1vmin;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 0.1vmin solid #e9ecef;
+}
+
+.action-item:hover {
+  background-color: #e9ecef;
+  transform: translateY(-0.1vmin);
+}
+
+.action-icon {
+  width: 4vmin;
+  height: 4vmin;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2vmin;
+  font-weight: bold;
+  margin-right: 1.5vmin;
+}
+
+.action-item span {
+  font-size: 2vmin;
+  color: #333;
+  font-weight: 500;
+}
+
+/* 设置面板样式 */
+.settings-panel {
+  animation: slideInRight 0.3s ease;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2vmin;
+  padding-bottom: 1vmin;
+  border-bottom: 0.1vmin solid #eee;
+}
+
+.back-btn {
+  width: 3vmin;
+  height: 3vmin;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2vmin;
+  color: #666;
+  cursor: pointer;
+  margin-right: 1vmin;
+  transition: background-color 0.2s ease;
+}
+
+.back-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* 模式选择样式 */
+.mode-selection {
+  display: flex;
+  background-color: #f8f9fa;
+  border-radius: 1vmin;
+  padding: 0.3vmin;
+  margin-bottom: 2vmin;
+}
+
+.mode-option {
+  flex: 1;
+  padding: 1.2vmin;
+  text-align: center;
+  border-radius: 0.7vmin;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.8vmin;
+  color: #666;
+}
+
+.mode-option.active {
+  background-color: white;
+  color: #333;
+  box-shadow: 0 0.2vmin 0.5vmin rgba(0, 0, 0, 0.1);
+}
+
+/* 设置组样式 */
+.setting-group {
+  margin-bottom: 2.5vmin;
+}
+
+.setting-group h4 {
+  margin: 0 0 1vmin 0;
+  color: #333;
+  font-size: 2vmin;
+  font-weight: 600;
+}
+
+/* 壁纸预览样式 */
+.wallpaper-preview {
+  border-radius: 1vmin;
+  overflow: hidden;
+  background-color: #f8f9fa;
+  border: 0.1vmin solid #e9ecef;
+}
+
+.wallpaper-preview img {
+  width: 100%;
+  height: 12vmin;
+  object-fit: cover;
+  display: block;
+}
+
+.wallpaper-actions {
+  padding: 1.5vmin;
+}
+
+.wallpaper-btn {
+  width: 100%;
+  padding: 1.2vmin;
+  border: none;
+  border-radius: 0.7vmin;
+  background-color: #007bff;
+  color: white;
+  font-size: 1.8vmin;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.wallpaper-btn:hover {
+  background-color: #0056b3;
+}
+
+/* 滑块容器样式 */
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 1.5vmin;
+}
+
+.slider {
+  flex: 1;
+  height: 0.6vmin;
+  border-radius: 0.3vmin;
+  background: #ddd;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 2.5vmin;
+  height: 2.5vmin;
+  border-radius: 50%;
+  background: #007bff;
+  cursor: pointer;
+  box-shadow: 0 0.2vmin 0.5vmin rgba(0, 0, 0, 0.2);
+}
+
+.slider::-moz-range-thumb {
+  width: 2.5vmin;
+  height: 2.5vmin;
+  border-radius: 50%;
+  background: #007bff;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0.2vmin 0.5vmin rgba(0, 0, 0, 0.2);
+}
+
+.slider-value {
+  min-width: 5vmin;
+  text-align: right;
+  font-size: 1.8vmin;
+  color: #666;
+  font-weight: 500;
+}
+
+/* 动画效果 */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .search-bar {

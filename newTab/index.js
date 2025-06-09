@@ -715,12 +715,19 @@
   const menuIcon = document.querySelector(".menu-icon");
   const modalOverlay = document.getElementById("modalOverlay");
   const closeBtn = document.getElementById("closeBtn");
+  const addBtn = document.getElementById("addBtn");
+  const settingsBtn = document.getElementById("settingsBtn");
+  const settingsPanel = document.getElementById("settingsPanel");
+  const backBtn = document.getElementById("backBtn");
+  const mainActions = document.querySelector(".main-actions");
 
   // 打开弹窗
   function openModal() {
     modalOverlay.classList.add("show");
     // 让app-grids-container向左移动，使app-item能完全显示
     appGridsContainer.style.marginLeft = "-20vmin";
+    // 重置到主界面
+    showMainActions();
   }
 
   // 关闭弹窗
@@ -728,6 +735,18 @@
     modalOverlay.classList.remove("show");
     // 复原app-grids-container的位置
     appGridsContainer.style.marginLeft = "0";
+  }
+
+  // 显示主要功能按钮
+  function showMainActions() {
+    mainActions.style.display = "flex";
+    settingsPanel.style.display = "none";
+  }
+
+  // 显示设置面板
+  function showSettingsPanel() {
+    mainActions.style.display = "none";
+    settingsPanel.style.display = "block";
   }
 
   // menu-icon点击事件
@@ -742,12 +761,109 @@
     closeModal();
   });
 
+  // 添加按钮点击事件
+  addBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    alert("添加功能待实现");
+  });
+
+  // 设置按钮点击事件
+  settingsBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    showSettingsPanel();
+  });
+
+  // 返回按钮点击事件
+  backBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    showMainActions();
+  });
+
   // 点击遮罩层关闭弹窗
   modalOverlay.addEventListener("click", (e) => {
     if (e.target === modalOverlay) {
       closeModal();
     }
   });
+
+  // 模式选择功能
+  const modeOptions = document.querySelectorAll(".mode-option");
+  const standardSettings = document.getElementById("standardSettings");
+
+  modeOptions.forEach((option) => {
+    option.addEventListener("click", () => {
+      // 移除所有active类
+      modeOptions.forEach((opt) => opt.classList.remove("active"));
+      // 添加active类到当前选项
+      option.classList.add("active");
+
+      const mode = option.dataset.mode;
+      if (mode === "standard") {
+        standardSettings.style.display = "block";
+      } else {
+        standardSettings.style.display = "none";
+      }
+    });
+  });
+
+  // 壁纸设置功能
+  const changeWallpaperBtn = document.getElementById("changeWallpaperBtn");
+  const wallpaperPreview = document.getElementById("wallpaperPreview");
+
+  changeWallpaperBtn.addEventListener("click", async () => {
+    try {
+      const timestamp = Date.now();
+      const response = await fetch(
+        `https://infinity-api.infinitynewtab.com/random-wallpaper?_=${timestamp}`
+      );
+      const data = await response.json();
+
+      if (data.success && data.data && data.data[0]) {
+        const rawSrc = data.data[0].src.rawSrc;
+        const wallpaperUrl = `${rawSrc}?imageView2/2/w/2880/format/webp/interlace/1`;
+
+        // 更新预览图
+        wallpaperPreview.src = wallpaperUrl;
+        // 更新背景壁纸
+        wallpaper.style.backgroundImage = `url(${wallpaperUrl})`;
+      }
+    } catch (error) {
+      console.error("获取壁纸失败:", error);
+      alert("获取壁纸失败，请稍后重试");
+    }
+  });
+
+  // 遮罩浓度滑块
+  const maskOpacitySlider = document.getElementById("maskOpacitySlider");
+  const maskOpacityValue = maskOpacitySlider.nextElementSibling;
+  const wallpaperMask = document.querySelector(".wallpaper-mask");
+
+  maskOpacitySlider.addEventListener("input", (e) => {
+    const value = e.target.value;
+    maskOpacityValue.textContent = `${value}%`;
+    wallpaperMask.style.backgroundColor = `rgba(0, 0, 0, ${value / 100})`;
+  });
+
+  // 模糊度滑块
+  const blurSlider = document.getElementById("blurSlider");
+  const blurValue = blurSlider.nextElementSibling;
+
+  blurSlider.addEventListener("input", (e) => {
+    const value = e.target.value;
+    const percentage = Math.round((value / 20) * 100);
+    console.log(percentage);
+
+    blurValue.textContent = `${percentage}%`;
+
+    // 设置CSS变量来控制模糊度
+    document.documentElement.style.setProperty(
+      "--wallpaper-filter",
+      `${value}px`
+    );
+  });
+
+  // 初始化CSS变量
+  document.documentElement.style.setProperty("--wallpaper-filter", "2px");
 
   // 页面加载完成后初始化数据
   loadData();
