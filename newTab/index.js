@@ -856,8 +856,11 @@
 
   maskOpacitySlider.addEventListener("input", (e) => {
     const value = e.target.value;
+    const percentage = (value / e.target.max) * 100;
     maskOpacityValue.textContent = `${value}%`;
     wallpaperMask.style.backgroundColor = `rgba(0, 0, 0, ${value / 100})`;
+    // 更新进度显示
+    e.target.style.setProperty('--progress', `${percentage}%`);
   });
 
   // 模糊度滑块
@@ -867,6 +870,7 @@
   blurSlider.addEventListener("input", (e) => {
     const value = e.target.value;
     const percentage = parseInt(value);
+    const progressPercentage = (value / e.target.max) * 100;
     blurValue.textContent = `${percentage}%`;
 
     // 设置CSS变量来控制模糊度，将百分比转换为像素值
@@ -875,14 +879,27 @@
       "--wallpaper-filter",
       `${blurPixels}px`
     );
+    // 更新进度显示
+    e.target.style.setProperty('--progress', `${progressPercentage}%`);
   });
 
-  // 初始化CSS变量
+  // 初始化CSS变量和进度显示
   const initialBlurPixels = (10 / 100) * 20; // 初始值10%对应2px
   document.documentElement.style.setProperty(
     "--wallpaper-filter",
     `${initialBlurPixels}px`
   );
+  
+  // 初始化slider进度显示
+  const initSliderProgress = (slider) => {
+    const value = slider.value;
+    const max = slider.max;
+    const percentage = (value / max) * 100;
+    slider.style.setProperty('--progress', `${percentage}%`);
+  };
+  
+  initSliderProgress(maskOpacitySlider);
+  initSliderProgress(blurSlider);
 
   // 页面加载完成后初始化数据
   loadData();
