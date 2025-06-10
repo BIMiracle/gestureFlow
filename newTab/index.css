@@ -191,12 +191,13 @@ nav {
   align-items: center;
   padding: 2vmin;
   border-radius: 1vmin;
-  background-color: rgb(238, 238, 238);
+  /* background-color: rgb(238, 238, 238); */
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 0.1vmin solid rgb(238, 238, 238);
+  /* border: 0.1vmin solid rgb(238, 238, 238); */
   flex: 1;
   text-align: center;
+  opacity: 0.4;
 }
 
 .action-item:hover {
@@ -205,17 +206,18 @@ nav {
 }
 
 .action-item.active {
-  background-color: rgb(51, 51, 51);
-  border-color: rgb(51, 51, 51);
+  /* background-color: rgb(51, 51, 51);
+  border-color: rgb(51, 51, 51); */
+  opacity: 1;
 }
 
 .action-item.active .action-icon {
-  background-color: white;
-  color: rgb(51, 51, 51);
+  /* background-color: white;
+  color: rgb(51, 51, 51); */
 }
 
 .action-item.active span {
-  color: white;
+  opacity: 1;
 }
 
 .action-icon {
@@ -355,7 +357,7 @@ nav {
 
 .slider {
   flex: 1;
-  height: 0.6vmin;
+  height: 2px;
   border-radius: 0.3vmin;
   background: rgb(238, 238, 238);
   outline: none;
@@ -368,19 +370,19 @@ nav {
   width: 2.5vmin;
   height: 2.5vmin;
   border-radius: 50%;
-  background: rgb(51, 51, 51);
+  background: rgb(255, 255, 255);
   cursor: pointer;
-  box-shadow: 0 0.2vmin 0.5vmin rgba(0, 0, 0, 0.2);
+  border: 2px solid rgb(51, 51, 51);
 }
 
 .slider::-moz-range-thumb {
   width: 2.5vmin;
   height: 2.5vmin;
   border-radius: 50%;
-  background: rgb(51, 51, 51);
+  /* background: rgb(51, 51, 51); */
+  background: rgb(255, 255, 255);
   cursor: pointer;
-  border: none;
-  box-shadow: 0 0.2vmin 0.5vmin rgba(0, 0, 0, 0.2);
+  border: 2px solid rgb(51, 51, 51);
 }
 
 .slider-value {
