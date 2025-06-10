@@ -717,8 +717,8 @@
   const closeBtn = document.getElementById("closeBtn");
   const addBtn = document.getElementById("addBtn");
   const settingsBtn = document.getElementById("settingsBtn");
+  const addPanel = document.getElementById("addPanel");
   const settingsPanel = document.getElementById("settingsPanel");
-  const backBtn = document.getElementById("backBtn");
   const mainActions = document.querySelector(".main-actions");
 
   // 打开弹窗
@@ -739,30 +739,28 @@
 
   // 显示主要功能按钮
   function showMainActions() {
-    mainActions.style.display = "flex";
-    settingsPanel.style.display = "none";
     // 默认选中设置功能
-    setActiveTab('settings');
+    showSettingsPanel();
   }
 
   // 显示设置面板
   function showSettingsPanel() {
     mainActions.style.display = "flex";
     settingsPanel.style.display = "block";
-    setActiveTab('settings');
+    setActiveTab("settings");
   }
 
   // 设置活跃标签
   function setActiveTab(tabName) {
     // 移除所有active类
-    addBtn.classList.remove('active');
-    settingsBtn.classList.remove('active');
-    
+    addBtn.classList.remove("active");
+    settingsBtn.classList.remove("active");
+
     // 添加对应的active类
-    if (tabName === 'add') {
-      addBtn.classList.add('active');
-    } else if (tabName === 'settings') {
-      settingsBtn.classList.add('active');
+    if (tabName === "add") {
+      addBtn.classList.add("active");
+    } else if (tabName === "settings") {
+      settingsBtn.classList.add("active");
     }
   }
 
@@ -788,23 +786,13 @@
   function showAddPanel() {
     mainActions.style.display = "flex";
     settingsPanel.style.display = "none";
-    setActiveTab('add');
-    // 这里可以添加显示添加内容的逻辑
-    alert("添加功能待实现");
+    setActiveTab("add");
   }
 
   // 设置按钮点击事件
   settingsBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     showSettingsPanel();
-  });
-
-  // 返回按钮点击事件
-  backBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    // 隐藏设置面板，保持main-actions显示，默认选中设置
-    settingsPanel.style.display = "none";
-    setActiveTab('settings');
   });
 
   // 点击遮罩层关闭弹窗

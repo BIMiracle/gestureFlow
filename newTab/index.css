@@ -127,6 +127,7 @@ nav {
   box-shadow: -0.5vmin 0 2vmin rgba(0, 0, 0, 0.3);
   transition: right 0.3s ease;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .modal-overlay.show .modal-panel {
@@ -135,7 +136,7 @@ nav {
 
 .modal-header {
   padding: 2vmin;
-  border-bottom: 0.1vmin solid #eee;
+  border-bottom: 0.1vmin solid rgb(238, 238, 238);
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -190,27 +191,27 @@ nav {
   align-items: center;
   padding: 2vmin;
   border-radius: 1vmin;
-  background-color: #f8f9fa;
+  background-color: rgb(238, 238, 238);
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 0.1vmin solid #e9ecef;
+  border: 0.1vmin solid rgb(238, 238, 238);
   flex: 1;
   text-align: center;
 }
 
 .action-item:hover {
-  background-color: #e9ecef;
+  background-color: rgb(221, 221, 221);
   transform: translateY(-0.1vmin);
 }
 
 .action-item.active {
-  background-color: #007bff;
-  border-color: #007bff;
+  background-color: rgb(51, 51, 51);
+  border-color: rgb(51, 51, 51);
 }
 
 .action-item.active .action-icon {
   background-color: white;
-  color: #007bff;
+  color: rgb(51, 51, 51);
 }
 
 .action-item.active span {
@@ -221,7 +222,7 @@ nav {
   width: 4vmin;
   height: 4vmin;
   border-radius: 50%;
-  background-color: #007bff;
+  background-color: rgb(51, 51, 51);
   color: white;
   display: flex;
   align-items: center;
@@ -242,12 +243,16 @@ nav {
   animation: slideInRight 0.3s ease;
 }
 
+.add-panel {
+  animation: slideInLeft 0.3s ease;
+}
+
 .settings-header {
   display: flex;
   align-items: center;
   margin-bottom: 2vmin;
   padding-bottom: 1vmin;
-  border-bottom: 0.1vmin solid #eee;
+  border-bottom: 0.1vmin solid rgb(238, 238, 238);
 }
 
 .back-btn {
@@ -271,7 +276,7 @@ nav {
 /* 模式选择样式 */
 .mode-selection {
   display: flex;
-  background-color: #f8f9fa;
+  background-color: rgb(238, 238, 238);
   border-radius: 1vmin;
   padding: 0.3vmin;
   margin-bottom: 2vmin;
@@ -310,8 +315,8 @@ nav {
 .wallpaper-preview {
   border-radius: 1vmin;
   overflow: hidden;
-  background-color: #f8f9fa;
-  border: 0.1vmin solid #e9ecef;
+  background-color: rgb(238, 238, 238);
+  border: 0.1vmin solid rgb(238, 238, 238);
 }
 
 .wallpaper-preview img {
@@ -330,7 +335,7 @@ nav {
   padding: 1.2vmin;
   border: none;
   border-radius: 0.7vmin;
-  background-color: #007bff;
+  background-color: rgb(51, 51, 51);
   color: white;
   font-size: 1.8vmin;
   cursor: pointer;
@@ -338,7 +343,7 @@ nav {
 }
 
 .wallpaper-btn:hover {
-  background-color: #0056b3;
+  background-color: rgb(68, 68, 68);
 }
 
 /* 滑块容器样式 */
@@ -352,7 +357,7 @@ nav {
   flex: 1;
   height: 0.6vmin;
   border-radius: 0.3vmin;
-  background: #ddd;
+  background: rgb(238, 238, 238);
   outline: none;
   -webkit-appearance: none;
 }
@@ -363,7 +368,7 @@ nav {
   width: 2.5vmin;
   height: 2.5vmin;
   border-radius: 50%;
-  background: #007bff;
+  background: rgb(51, 51, 51);
   cursor: pointer;
   box-shadow: 0 0.2vmin 0.5vmin rgba(0, 0, 0, 0.2);
 }
@@ -372,7 +377,7 @@ nav {
   width: 2.5vmin;
   height: 2.5vmin;
   border-radius: 50%;
-  background: #007bff;
+  background: rgb(51, 51, 51);
   cursor: pointer;
   border: none;
   box-shadow: 0 0.2vmin 0.5vmin rgba(0, 0, 0, 0.2);
@@ -390,6 +395,17 @@ nav {
 @keyframes slideInRight {
   from {
     transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+/* 动画效果 */
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
     opacity: 0;
   }
   to {
@@ -477,8 +493,8 @@ nav {
 }
 
 .suggestion-item.selected {
-  background-color: rgba(0, 123, 255, 0.1);
-  color: #007bff;
+  background-color: rgba(51, 51, 51, 0.1);
+  color: rgb(51, 51, 51);
 }
 
 main {
@@ -549,10 +565,10 @@ main {
 @keyframes blink {
   0%,
   100% {
-    filter: drop-shadow(rgba(33, 150, 243, 0.72) 0px 0px 0px);
+    filter: drop-shadow(rgba(51, 51, 51, 0.72) 0px 0px 0px);
   }
   50% {
-    filter: drop-shadow(rgba(33, 150, 243, 0.72) 0px 0px 10px);
+    filter: drop-shadow(rgba(51, 51, 51, 0.72) 0px 0px 10px);
   }
 }
 
