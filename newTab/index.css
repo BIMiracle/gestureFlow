@@ -163,6 +163,7 @@ nav {
 }
 
 .modal-content {
+  height: 100%;
   padding: 2vmin;
   overflow-y: auto;
   overflow-x: hidden;
@@ -225,15 +226,15 @@ nav {
 }
 
 .action-icon {
-  width: 4vmin;
-  height: 4vmin;
+  width: 3vmin;
+  height: 3vmin;
   border-radius: 50%;
-  background-color: rgb(51, 51, 51);
-  color: white;
+  /* background-color: rgb(51, 51, 51); */
+  /* color: white; */
+  color: rgb(51, 51, 51);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2vmin;
   font-weight: bold;
   margin-bottom: 1vmin;
 }
@@ -323,33 +324,41 @@ nav {
   overflow: hidden;
   background-color: rgb(238, 238, 238);
   border: 0.1vmin solid rgb(238, 238, 238);
+  position: relative;
+}
+.setting-wallpaper-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0);
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.setting-wallpaper-mask:hover {
+  background-color: rgba(0, 0, 0, 0.25);
+  opacity: 1;
 }
 
-.wallpaper-preview img {
+#wallpaperPreview {
   width: 100%;
   height: 12vmin;
   object-fit: cover;
   display: block;
 }
 
-.wallpaper-actions {
-  padding: 1.5vmin;
-}
-
 .wallpaper-btn {
-  width: 100%;
   padding: 1.2vmin;
   border: none;
   border-radius: 0.7vmin;
-  background-color: rgb(51, 51, 51);
+  background-color: rgb(51, 51, 51, 0.6);
   color: white;
   font-size: 1.8vmin;
   cursor: pointer;
   transition: background-color 0.2s ease;
-}
-
-.wallpaper-btn:hover {
-  background-color: rgb(68, 68, 68);
 }
 
 /* 滑块容器样式 */
