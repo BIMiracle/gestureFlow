@@ -56,8 +56,8 @@
                   <div class="action-icon">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      width="1024"
-                      height="1024"
+                      width="48"
+                      height="48"
                       viewBox="0 0 1024 1024"
                     >
                       <path
@@ -71,7 +71,89 @@
               </div>
 
               <!-- 添加面板 -->
-              <div class="add-panel" id="addPanel" style="display: none"></div>
+              <div class="add-panel" id="addPanel" style="display: none">
+                <!-- 添加表单 -->
+                <div class="add-form" id="addForm">
+                  <h3>添加网站</h3>
+                  <div class="form-group">
+                    <label for="siteUrl"
+                      ><span class="required">*</span>网站地址<span
+                        class="error-message"
+                        id="urlError"
+                      ></span
+                    ></label>
+                    <input
+                      type="url"
+                      id="siteUrl"
+                      placeholder="https://www.bilibili.com"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="siteName"
+                      >网站名称<span class="error-message" id="nameError"></span
+                    ></label>
+                    <input
+                      type="text"
+                      id="siteName"
+                      placeholder="输入完整网站地址自动获取"
+                      required
+                    />
+                  </div>
+                  <div class="form-actions">
+                    <button type="button" class="next-btn" id="nextBtn">
+                      下一步
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 图标选择 -->
+                <div
+                  class="icon-selection"
+                  id="iconSelection"
+                  style="display: none"
+                >
+                  <div class="selection-header">
+                    <button class="back-btn" id="backToForm">←</button>
+                    <h3>选择图标</h3>
+                  </div>
+                  <div class="icon-options">
+                    <div class="icon-option" data-type="auto">
+                      <div class="icon-preview auto-icon">自</div>
+                      <span>自动获取</span>
+                    </div>
+                    <div class="icon-option" data-type="text">
+                      <div class="icon-preview text-icon" id="textIconPreview">
+                        哔
+                      </div>
+                      <span>文字图标</span>
+                    </div>
+                    <div class="icon-option" data-type="color">
+                      <div class="icon-preview color-icon"></div>
+                      <span>纯色背景</span>
+                    </div>
+                    <div class="icon-option" data-type="upload">
+                      <div class="icon-preview upload-icon">📁</div>
+                      <span>上传图片</span>
+                    </div>
+                  </div>
+                  <div
+                    class="icon-config"
+                    id="iconConfig"
+                    style="display: none"
+                  ></div>
+                  <div class="form-actions">
+                    <button
+                      type="button"
+                      class="save-btn"
+                      id="saveBtn"
+                      disabled
+                    >
+                      保存
+                    </button>
+                  </div>
+                </div>
+              </div>
 
               <!-- 设置面板 -->
               <div

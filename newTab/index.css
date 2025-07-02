@@ -254,6 +254,237 @@ nav {
   animation: slideInLeft 0.3s ease;
 }
 
+/* 添加面板样式 */
+.add-form {
+  padding: 1vmin 0;
+}
+
+.add-form h3 {
+  margin: 0 0 2vmin 0;
+  color: #333;
+  font-size: 2.5vmin;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 2vmin;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.8vmin;
+  color: #333;
+  font-size: 1.8vmin;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 1.2vmin;
+  border: 0.1vmin solid rgb(238, 238, 238);
+  border-radius: 0.7vmin;
+  font-size: 1.8vmin;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: rgb(51, 51, 51);
+}
+
+.error-message {
+  color: #ff4444;
+  font-size: 1.4vmin;
+  margin-left: 1vmin;
+  display: none;
+  font-weight: normal;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 2.5vmin;
+}
+
+.next-btn,
+.save-btn {
+  padding: 1.2vmin 3vmin;
+  border: none;
+  border-radius: 0.7vmin;
+  background-color: rgb(51, 51, 51);
+  color: white;
+  font-size: 1.8vmin;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.next-btn:hover,
+.save-btn:hover {
+  background-color: rgb(34, 34, 34);
+}
+
+.save-btn:disabled {
+  background-color: rgb(170, 170, 170);
+  cursor: not-allowed;
+}
+
+/* 图标选择样式 */
+.icon-selection {
+  padding: 1vmin 0;
+}
+
+.selection-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2vmin;
+  padding-bottom: 1vmin;
+  border-bottom: 0.1vmin solid rgb(238, 238, 238);
+}
+
+.selection-header .back-btn {
+  width: 3vmin;
+  height: 3vmin;
+  border: none;
+  border-radius: 50%;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2vmin;
+  color: #666;
+  cursor: pointer;
+  margin-right: 1vmin;
+  transition: background-color 0.2s ease;
+}
+
+.selection-header .back-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.selection-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 2.5vmin;
+  flex: 1;
+  text-align: center;
+}
+
+.icon-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5vmin;
+  margin-bottom: 2vmin;
+}
+
+.icon-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2vmin;
+  border: 0.1vmin solid rgb(238, 238, 238);
+  border-radius: 1vmin;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.icon-option:hover {
+  border-color: rgb(51, 51, 51);
+  background-color: rgba(51, 51, 51, 0.05);
+}
+
+.icon-option.selected {
+  border-color: rgb(51, 51, 51);
+  background-color: rgba(51, 51, 51, 0.1);
+}
+
+.icon-preview {
+  width: 4vmin;
+  height: 4vmin;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2vmin;
+  font-weight: bold;
+  margin-bottom: 1vmin;
+  color: white;
+}
+
+.auto-icon {
+  background-color: #4285f4;
+}
+
+.text-icon {
+  background-color: #34a853;
+}
+
+.color-icon {
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+}
+
+.upload-icon {
+  background-color: #ff9500;
+  font-size: 1.8vmin;
+}
+
+.icon-option span {
+  font-size: 1.6vmin;
+  color: #333;
+  font-weight: 500;
+}
+
+.icon-config {
+  background-color: rgba(238, 238, 238, 0.3);
+  border-radius: 1vmin;
+  padding: 2vmin;
+  margin-bottom: 2vmin;
+}
+
+.config-group {
+  margin-bottom: 1.5vmin;
+}
+
+.config-group:last-child {
+  margin-bottom: 0;
+}
+
+.config-group label {
+  display: block;
+  margin-bottom: 0.8vmin;
+  color: #333;
+  font-size: 1.6vmin;
+  font-weight: 500;
+}
+
+.config-group input {
+  width: 100%;
+  padding: 1vmin;
+  border: 0.1vmin solid rgb(221, 221, 221);
+  border-radius: 0.5vmin;
+  font-size: 1.6vmin;
+  box-sizing: border-box;
+}
+
+.config-group input[type="color"] {
+  height: 4vmin;
+  padding: 0.2vmin;
+  cursor: pointer;
+}
+
+.config-group input[type="file"] {
+  padding: 0.8vmin;
+}
+
+.icon-config p {
+  margin: 0;
+  color: #666;
+  font-size: 1.6vmin;
+  text-align: center;
+  font-style: italic;
+}
+
 .settings-header {
   display: flex;
   align-items: center;
@@ -814,4 +1045,9 @@ footer {
   .search-bar {
     max-width: calc(100% - 5.472vmin);
   }
+}
+
+.required {
+  color: rgb(224, 67, 67);
+  margin-right: 2px;
 }

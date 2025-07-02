@@ -747,6 +747,7 @@
   function showSettingsPanel() {
     mainActions.style.display = "flex";
     settingsPanel.style.display = "block";
+    addPanel.style.display = "none";
     setActiveTab("settings");
   }
 
@@ -786,7 +787,423 @@
   function showAddPanel() {
     mainActions.style.display = "flex";
     settingsPanel.style.display = "none";
+    addPanel.style.display = "block";
     setActiveTab("add");
+
+    // 初始化添加面板内容
+    initAddPanel();
+  }
+
+  // 初始化添加面板
+  function initAddPanel() {
+    // 显示添加表单，隐藏图标选择
+    const addForm = document.getElementById("addForm");
+    const iconSelection = document.getElementById("iconSelection");
+    addForm.style.display = "block";
+    iconSelection.style.display = "none";
+
+    // 复原表单
+    document.getElementById("siteUrl").value = "https://";
+    document.getElementById("siteName").value = "";
+    document.getElementById("urlError").style.display = "none";
+    document.getElementById("nameError").style.display = "none";
+
+    // 绑定输入框事件
+    const siteUrlInput = document.getElementById("siteUrl");
+    const siteNameInput = document.getElementById("siteName");
+    const urlError = document.getElementById("urlError");
+    const nameError = document.getElementById("nameError");
+
+    // 移除之前的事件监听器（如果存在）
+    siteUrlInput.removeEventListener("blur", validateUrl);
+    siteUrlInput.removeEventListener("input", clearUrlError);
+    siteNameInput.removeEventListener("blur", validateName);
+    siteNameInput.removeEventListener("input", clearNameError);
+
+    // 网站地址输入框失焦验证
+    function validateUrl() {
+      const value = siteUrlInput.value.trim();
+      if (!value) {
+        urlError.textContent = "请输入网站地址";
+        urlError.style.display = "inline";
+      } else {
+        try {
+          new URL(value);
+          urlError.style.display = "none";
+        } catch (e) {
+          urlError.textContent = "请输入有效的网站地址";
+          urlError.style.display = "inline";
+        }
+      }
+    }
+
+    // 网站地址输入框输入时清除错误并尝试获取网站信息
+    function clearUrlError() {
+      if (siteUrlInput.value.trim()) {
+        urlError.style.display = "none";
+        // 使用防抖函数处理输入变化
+        debouncedFetchSiteInfo(siteUrlInput.value.trim());
+      }
+    }
+
+    // 防抖处理网站信息获取
+    const debouncedFetchSiteInfo = debounce(fetchSiteInfo, 800);
+
+    // 获取网站信息
+    async function fetchSiteInfo(url) {
+      // 确保URL格式正确
+      try {
+        // 尝试创建URL对象验证格式
+        const urlObj = new URL(url);
+
+        // 显示加载指示器
+        const loadingIndicator = document.createElement("span");
+        loadingIndicator.textContent = " 正在获取网站信息...";
+        loadingIndicator.style.color = "#666";
+        loadingIndicator.style.fontSize = "12px";
+        loadingIndicator.id = "loadingIndicator";
+
+        // 移除之前的加载指示器（如果存在）
+        const existingIndicator = document.getElementById("loadingIndicator");
+        if (existingIndicator) {
+          existingIndicator.remove();
+        }
+
+        // 添加新的加载指示器
+        const urlLabel = document.querySelector('label[for="siteUrl"]');
+        urlLabel.appendChild(loadingIndicator);
+
+        try {
+          // 尝试使用fetch API获取网站信息
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
+
+          const response = await fetch(`${url}`, {
+            signal: controller.signal,
+          });
+
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const html = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+
+            // 获取标题
+            const title = doc.title;
+
+            if (title) {
+              siteNameInput.value = title;
+              validateName();
+            }
+
+            // 获取图标
+            const faviconLink = doc.querySelector(
+              'link[rel="icon"], link[rel="shortcut icon"]'
+            );
+            if (faviconLink && faviconLink.href) {
+              const faviconUrl = new URL(faviconLink.href, url).href;
+              console.log("找到网站图标:", faviconUrl);
+              // 保存图标URL
+              window.siteIconUrl = faviconUrl;
+
+              // 如果选择了自动图标，更新预览
+              updateAutoIconPreview(faviconUrl);
+            } else {
+              // 尝试默认图标路径
+              const defaultIconUrl = new URL("/favicon.ico", url).href;
+              try {
+                const iconResponse = await fetch(defaultIconUrl, {
+                  method: "HEAD",
+                });
+                if (iconResponse.ok) {
+                  console.log("找到默认网站图标:", defaultIconUrl);
+                  window.siteIconUrl = defaultIconUrl;
+                  updateAutoIconPreview(defaultIconUrl);
+                }
+              } catch (e) {
+                console.log("无法获取默认图标");
+              }
+            }
+
+            loadingIndicator.textContent = " 获取成功";
+            loadingIndicator.style.color = "green";
+            setTimeout(() => loadingIndicator.remove(), 2000);
+          } else {
+            throw new Error("请求失败");
+          }
+        } catch (e) {
+          console.log("使用fetch获取网站信息失败:", e.message);
+          loadingIndicator.textContent = " 获取失败";
+          loadingIndicator.style.color = "red";
+          setTimeout(() => loadingIndicator.remove(), 2000);
+
+          // 备用方法：使用iframe（可能受跨域限制）
+          tryFetchWithIframe(url);
+        }
+      } catch (e) {
+        // URL格式不正确，不执行请求
+        console.log("URL格式不正确");
+        const existingIndicator = document.getElementById("loadingIndicator");
+        if (existingIndicator) {
+          existingIndicator.remove();
+        }
+      }
+    }
+
+    // 更新自动图标预览
+    function updateAutoIconPreview(iconUrl) {
+      const autoIconPreview = document.querySelector(
+        '.icon-option[data-type="auto"] .icon-preview'
+      );
+      if (autoIconPreview) {
+        // 保存原始内容
+        if (!autoIconPreview.dataset.originalContent) {
+          autoIconPreview.dataset.originalContent = autoIconPreview.innerHTML;
+        }
+
+        // 清空内容并设置背景图片
+        autoIconPreview.innerHTML = "";
+        autoIconPreview.style.backgroundImage = `url(${iconUrl})`;
+        autoIconPreview.style.backgroundSize = "contain";
+        autoIconPreview.style.backgroundPosition = "center";
+        autoIconPreview.style.backgroundRepeat = "no-repeat";
+      }
+    }
+
+    // 备用方法：使用iframe尝试获取
+    function tryFetchWithIframe(url) {
+      // 创建一个隐藏的iframe来加载网页
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      document.body.appendChild(iframe);
+
+      // 设置超时
+      const timeoutId = setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 5000); // 5秒超时
+
+      // 加载事件
+      iframe.onload = () => {
+        clearTimeout(timeoutId);
+
+        try {
+          // 尝试获取网站标题
+          const title = iframe.contentDocument.title;
+          if (title && siteNameInput.value.trim() === "") {
+            siteNameInput.value = title;
+          }
+
+          // 尝试获取网站图标
+          const favicon = iframe.contentDocument.querySelector(
+            'link[rel="icon"], link[rel="shortcut icon"]'
+          );
+          if (favicon) {
+            const faviconUrl = new URL(favicon.href, url).href;
+            console.log("通过iframe找到网站图标:", faviconUrl);
+            window.siteIconUrl = faviconUrl;
+            updateAutoIconPreview(faviconUrl);
+          }
+        } catch (e) {
+          console.log("无法访问iframe内容，可能是跨域限制");
+        } finally {
+          document.body.removeChild(iframe);
+        }
+      };
+
+      iframe.onerror = () => {
+        clearTimeout(timeoutId);
+        document.body.removeChild(iframe);
+      };
+
+      iframe.src = url;
+    }
+
+    // 网站名称输入框失焦验证
+    function validateName() {
+      const value = siteNameInput.value.trim();
+      if (!value) {
+        nameError.textContent = "请输入网站名称";
+        nameError.style.display = "inline";
+      } else {
+        nameError.style.display = "none";
+      }
+    }
+
+    // 网站名称输入框输入时清除错误
+    function clearNameError() {
+      if (siteNameInput.value.trim()) {
+        nameError.style.display = "none";
+      }
+    }
+
+    // 绑定事件监听器
+    siteUrlInput.addEventListener("blur", validateUrl);
+    siteUrlInput.addEventListener("input", clearUrlError);
+    siteNameInput.addEventListener("blur", validateName);
+    siteNameInput.addEventListener("input", clearNameError);
+
+    // 绑定下一步按钮事件
+    const nextBtn = document.getElementById("nextBtn");
+    nextBtn.removeEventListener("click", showIconSelection);
+    nextBtn.addEventListener("click", showIconSelection);
+  }
+
+  // 显示图标选择界面
+  function showIconSelection() {
+    const siteUrl = document.getElementById("siteUrl").value.trim();
+    const siteName = document.getElementById("siteName").value.trim();
+    const urlError = document.getElementById("urlError");
+    const nameError = document.getElementById("nameError");
+
+    let hasError = false;
+
+    // 验证网站地址
+    if (!siteUrl) {
+      urlError.textContent = "请输入网站地址";
+      urlError.style.display = "inline";
+      hasError = true;
+    } else {
+      try {
+        new URL(siteUrl);
+        urlError.style.display = "none";
+      } catch (e) {
+        urlError.textContent = "请输入有效的网站地址";
+        urlError.style.display = "inline";
+        hasError = true;
+      }
+    }
+
+    // 验证网站名称
+    if (!siteName) {
+      nameError.textContent = "请输入网站名称";
+      nameError.style.display = "inline";
+      hasError = true;
+    } else {
+      nameError.style.display = "none";
+    }
+
+    // 如果有错误，不继续执行
+    if (hasError) {
+      return;
+    }
+
+    // 隐藏添加表单，显示图标选择
+    const addForm = document.getElementById("addForm");
+    const iconSelection = document.getElementById("iconSelection");
+    addForm.style.display = "none";
+    iconSelection.style.display = "block";
+
+    // 更新文字图标预览
+    const textIconPreview = document.getElementById("textIconPreview");
+    textIconPreview.textContent = siteName.charAt(0);
+
+    // 重置选择状态
+    const iconOptions = document.querySelectorAll(".icon-option");
+    iconOptions.forEach((opt) => opt.classList.remove("selected"));
+    const iconConfig = document.getElementById("iconConfig");
+    iconConfig.style.display = "none";
+    const saveBtn = document.getElementById("saveBtn");
+    saveBtn.disabled = true;
+
+    // 绑定返回按钮事件
+    const backBtn = document.getElementById("backToForm");
+    backBtn.removeEventListener("click", backToFormHandler);
+
+    function backToFormHandler() {
+      // 显示添加表单，隐藏图标选择
+      addForm.style.display = "block";
+      iconSelection.style.display = "none";
+      // 内容会保留，因为没有清空
+    }
+
+    backBtn.addEventListener("click", backToFormHandler);
+
+    // 绑定图标选项事件
+    let selectedIconType = null;
+    let iconData = {};
+
+    // 移除之前的事件监听器
+    iconOptions.forEach((option) => {
+      option.removeEventListener("click", option.iconClickHandler);
+    });
+
+    iconOptions.forEach((option) => {
+      function iconClickHandler() {
+        // 移除其他选项的选中状态
+        iconOptions.forEach((opt) => opt.classList.remove("selected"));
+        // 添加当前选项的选中状态
+        option.classList.add("selected");
+
+        selectedIconType = option.dataset.type;
+        showIconConfig(selectedIconType, siteName, iconConfig);
+        saveBtn.disabled = false;
+      }
+
+      option.iconClickHandler = iconClickHandler;
+      option.addEventListener("click", iconClickHandler);
+    });
+
+    // 绑定保存按钮事件
+    saveBtn.removeEventListener("click", saveBtn.saveClickHandler);
+
+    function saveClickHandler() {
+      if (selectedIconType) {
+        saveNewSite(siteUrl, siteName, selectedIconType, iconData);
+      }
+    }
+
+    saveBtn.saveClickHandler = saveClickHandler;
+    saveBtn.addEventListener("click", saveClickHandler);
+  }
+
+  // 显示图标配置选项
+  function showIconConfig(iconType, siteName, configContainer) {
+    configContainer.style.display = "block";
+
+    switch (iconType) {
+      case "auto":
+        configContainer.innerHTML = "<p>将自动获取网站图标</p>";
+        break;
+      case "text":
+        configContainer.innerHTML = `
+          <div class="config-group">
+            <label>显示文字</label>
+            <input type="text" id="iconText" value="${siteName.charAt(
+              0
+            )}" maxlength="2">
+          </div>
+          <div class="config-group">
+            <label>背景颜色</label>
+            <input type="color" id="iconBgColor" value="#4285f4">
+          </div>
+        `;
+        break;
+      case "color":
+        configContainer.innerHTML = `
+          <div class="config-group">
+            <label>背景颜色</label>
+            <input type="color" id="iconBgColor" value="#4285f4">
+          </div>
+        `;
+        break;
+      case "upload":
+        configContainer.innerHTML = `
+          <div class="config-group">
+            <label>选择图片</label>
+            <input type="file" id="iconFile" accept="image/*">
+          </div>
+        `;
+        break;
+    }
+  }
+
+  // 保存新网站
+  function saveNewSite(url, name, iconType, iconData) {
+    // 这里可以实现保存逻辑
+    // 暂时只是显示成功消息
+    alert(`网站添加成功！\n地址：${url}\n名称：${name}\n图标类型：${iconType}`);
+    closeModal();
   }
 
   // 设置按钮点击事件
@@ -860,7 +1277,7 @@
     maskOpacityValue.textContent = `${value}%`;
     wallpaperMask.style.backgroundColor = `rgba(0, 0, 0, ${value / 100})`;
     // 更新进度显示
-    e.target.style.setProperty('--progress', `${percentage}%`);
+    e.target.style.setProperty("--progress", `${percentage}%`);
   });
 
   // 模糊度滑块
@@ -880,7 +1297,7 @@
       `${blurPixels}px`
     );
     // 更新进度显示
-    e.target.style.setProperty('--progress', `${progressPercentage}%`);
+    e.target.style.setProperty("--progress", `${progressPercentage}%`);
   });
 
   // 初始化CSS变量和进度显示
@@ -889,15 +1306,15 @@
     "--wallpaper-filter",
     `${initialBlurPixels}px`
   );
-  
+
   // 初始化slider进度显示
   const initSliderProgress = (slider) => {
     const value = slider.value;
     const max = slider.max;
     const percentage = (value / max) * 100;
-    slider.style.setProperty('--progress', `${percentage}%`);
+    slider.style.setProperty("--progress", `${percentage}%`);
   };
-  
+
   initSliderProgress(maskOpacitySlider);
   initSliderProgress(blurSlider);
 
