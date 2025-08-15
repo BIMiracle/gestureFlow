@@ -201,7 +201,8 @@
       // 强制重绘
       appGridsContainer.offsetHeight;
       // 恢复动画
-      appGridsContainer.style.transition = "transform 350ms ease-in-out";
+      appGridsContainer.style.transition =
+        "transform 350ms ease-in-out, margin-left 350ms ease-in-out";
       // 执行动画，移动到克隆页面（最后一页的克隆，在容器的第一个位置）
       appGridsContainer.style.transform = `translateX(0%)`;
     }
@@ -216,7 +217,8 @@
       // 强制重绘
       appGridsContainer.offsetHeight;
       // 恢复动画效果
-      appGridsContainer.style.transition = "transform 350ms ease-in-out";
+      appGridsContainer.style.transition =
+        "transform 350ms ease-in-out, margin-left 350ms ease-in-out";
 
       // 更新当前页面索引和分页点
       currentPageIndex = targetIndex;
