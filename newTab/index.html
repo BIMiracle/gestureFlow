@@ -219,6 +219,40 @@
                       <span class="slider-value">10%</span>
                     </div>
                   </div>
+
+                  <div class="setting-group">
+                    <h4>数据管理</h4>
+                    <div class="data-management">
+                      <button class="export-btn" id="exportBtn">导出配置</button>
+                      <button class="github-sync-btn" id="githubSyncBtn">Github同步</button>
+                    </div>
+                  </div>
+
+                  <!-- Github同步配置面板 -->
+                  <div class="github-sync-panel" id="githubSyncPanel" style="display: none;">
+                    <h4>Github同步配置</h4>
+                    <div class="form-group">
+                      <label for="githubUsername">Github用户名</label>
+                      <input type="text" id="githubUsername" placeholder="输入Github用户名" />
+                    </div>
+                    <div class="form-group">
+                      <label for="githubRepo">私有仓库名</label>
+                      <input type="text" id="githubRepo" placeholder="输入仓库名" />
+                    </div>
+                    <div class="form-group">
+                      <label for="githubBranch">分支名</label>
+                      <input type="text" id="githubBranch" placeholder="main" value="main" />
+                    </div>
+                    <div class="form-group">
+                      <label for="githubToken">访问令牌</label>
+                      <input type="password" id="githubToken" placeholder="输入Github访问令牌" />
+                    </div>
+                    <div class="github-actions">
+                      <button class="upload-btn" id="uploadToGithub">上传到Github</button>
+                      <button class="download-btn" id="downloadFromGithub">从Github下载</button>
+                      <button class="cancel-btn" id="cancelGithubSync">取消</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

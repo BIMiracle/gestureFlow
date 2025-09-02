@@ -93,8 +93,16 @@
         }
 
         // 添加特殊类名（如果有）
-        if (site.name === "Gmail") {
+        if (site.name === "Gmail" || site.target === "infinity://gmail" || site.target === "https: //mail.google.com/mail/u/0") {
           appIcon.classList.add("gmail-icon");
+          // 添加Gmail未读邮件数显示
+          const notificationBadge = document.createElement("div");
+          notificationBadge.classList.add("notification-badge");
+          notificationBadge.style.display = "none"; // 默认隐藏
+          appIcon.appendChild(notificationBadge);
+          
+          // 获取Gmail未读邮件数
+          fetchGmailUnreadCount(notificationBadge);
         } else if (site.name.includes("小程序")) {
           appIcon.classList.add("wechat-icon");
         } else if (site.name.includes("热榜")) {
@@ -1319,6 +1327,321 @@
 
   initSliderProgress(maskOpacitySlider);
   initSliderProgress(blurSlider);
+
+  // 获取Gmail未读邮件数
+  function fetchGmailUnreadCount(badgeElement) {
+    // 模拟获取未读邮件数，实际应用中需要集成Gmail API
+    // 这里先使用localStorage存储的模拟数据
+    const unreadCount = localStorage.getItem('gmailUnreadCount') || 0;
+    
+    if (unreadCount > 0) {
+      badgeElement.textContent = unreadCount > 99 ? '99+' : unreadCount;
+      badgeElement.style.display = 'flex';
+    } else {
+      badgeElement.style.display = 'none';
+    }
+    
+    // 定期更新未读邮件数（每5分钟）
+    setInterval(() => {
+      const newCount = localStorage.getItem('gmailUnreadCount') || 0;
+      if (newCount > 0) {
+        badgeElement.textContent = newCount > 99 ? '99+' : newCount;
+        badgeElement.style.display = 'flex';
+      } else {
+        badgeElement.style.display = 'none';
+      }
+    }, 300000); // 5分钟
+  }
+  
+  // 设置Gmail未读邮件数（用于测试）
+  function setGmailUnreadCount(count) {
+    localStorage.setItem('gmailUnreadCount', count);
+    // 更新所有Gmail图标的徽章
+    document.querySelectorAll('.notification-badge').forEach(badge => {
+      if (count > 0) {
+        badge.textContent = count > 99 ? '99+' : count;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    });
+  }
+  
+  // 暴露到全局作用域用于测试
+  window.setGmailUnreadCount = setGmailUnreadCount;
+
+  // 导出配置功能
+  function exportConfig() {
+    try {
+      // 获取localStorage中的所有数据
+      const data = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        data[key] = localStorage.getItem(key);
+      }
+      
+      // 去除空格和回车，转换为紧凑的JSON字符串
+      const jsonString = JSON.stringify(data).replace(/\s+/g, '');
+      
+      // 生成文件名
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const filename = `gestureFlowBackup-${year}-${month}-${day}.json`;
+      
+      // 创建下载链接
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      console.log('配置导出成功:', filename);
+    } catch (error) {
+      console.error('导出配置失败:', error);
+      alert('导出失败，请重试');
+    }
+  }
+
+  // Github同步功能
+  class GithubSync {
+    constructor() {
+      this.apiBase = 'https://api.github.com';
+    }
+    
+    // 上传文件到Github
+    async uploadToGithub(username, repo, branch, token, filename, content) {
+      try {
+        const url = `${this.apiBase}/repos/${username}/${repo}/contents/${filename}`;
+        
+        // 检查文件是否已存在
+        let sha = null;
+        try {
+          const existingFile = await fetch(url, {
+            headers: {
+              'Authorization': `token ${token}`,
+              'Accept': 'application/vnd.github.v3+json'
+            }
+          });
+          if (existingFile.ok) {
+            const fileData = await existingFile.json();
+            sha = fileData.sha;
+          }
+        } catch (e) {
+          // 文件不存在，继续创建
+        }
+        
+        // 上传文件
+        const response = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: `Update backup ${filename}`,
+            content: btoa(unescape(encodeURIComponent(content))), // Base64编码
+            branch: branch,
+            ...(sha && { sha }) // 如果文件存在，包含sha
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Github API错误: ${response.status}`);
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.error('上传到Github失败:', error);
+        throw error;
+      }
+    }
+    
+    // 从Github下载文件
+    async downloadFromGithub(username, repo, branch, token, filename) {
+      try {
+        const url = `${this.apiBase}/repos/${username}/${repo}/contents/${filename}?ref=${branch}`;
+        
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Github API错误: ${response.status}`);
+        }
+        
+        const fileData = await response.json();
+        const content = decodeURIComponent(escape(atob(fileData.content)));
+        
+        return JSON.parse(content);
+      } catch (error) {
+        console.error('从Github下载失败:', error);
+        throw error;
+      }
+    }
+    
+    // 获取仓库中的所有备份文件
+    async getBackupFiles(username, repo, branch, token) {
+      try {
+        const url = `${this.apiBase}/repos/${username}/${repo}/contents?ref=${branch}`;
+        
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Github API错误: ${response.status}`);
+        }
+        
+        const files = await response.json();
+        return files.filter(file => 
+          file.name.startsWith('gestureFlowBackup-') && file.name.endsWith('.json')
+        ).sort((a, b) => b.name.localeCompare(a.name)); // 按日期降序排列
+      } catch (error) {
+        console.error('获取备份文件列表失败:', error);
+        throw error;
+      }
+    }
+  }
+
+  const githubSync = new GithubSync();
+
+  // 事件监听器
+  document.addEventListener('DOMContentLoaded', function() {
+    // 导出按钮事件
+    const exportBtn = document.getElementById('exportBtn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', exportConfig);
+    }
+    
+    // Github同步按钮事件
+    const githubSyncBtn = document.getElementById('githubSyncBtn');
+    const githubSyncPanel = document.getElementById('githubSyncPanel');
+    const cancelGithubSync = document.getElementById('cancelGithubSync');
+    
+    if (githubSyncBtn && githubSyncPanel) {
+      githubSyncBtn.addEventListener('click', function() {
+        githubSyncPanel.style.display = githubSyncPanel.style.display === 'none' ? 'block' : 'none';
+      });
+    }
+    
+    if (cancelGithubSync && githubSyncPanel) {
+      cancelGithubSync.addEventListener('click', function() {
+        githubSyncPanel.style.display = 'none';
+      });
+    }
+    
+    // 上传到Github
+    const uploadToGithub = document.getElementById('uploadToGithub');
+    if (uploadToGithub) {
+      uploadToGithub.addEventListener('click', async function() {
+        const username = document.getElementById('githubUsername').value.trim();
+        const repo = document.getElementById('githubRepo').value.trim();
+        const branch = document.getElementById('githubBranch').value.trim() || 'main';
+        const token = document.getElementById('githubToken').value.trim();
+        
+        if (!username || !repo || !token) {
+          alert('请填写完整的Github配置信息');
+          return;
+        }
+        
+        try {
+          // 生成备份数据
+          const data = {};
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            data[key] = localStorage.getItem(key);
+          }
+          
+          const jsonString = JSON.stringify(data).replace(/\s+/g, '');
+          
+          // 生成文件名
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = String(now.getMonth() + 1).padStart(2, '0');
+          const day = String(now.getDate()).padStart(2, '0');
+          const filename = `gestureFlowBackup-${year}-${month}-${day}.json`;
+          
+          uploadToGithub.textContent = '上传中...';
+          uploadToGithub.disabled = true;
+          
+          await githubSync.uploadToGithub(username, repo, branch, token, filename, jsonString);
+          
+          alert('上传到Github成功！');
+          githubSyncPanel.style.display = 'none';
+        } catch (error) {
+          alert(`上传失败: ${error.message}`);
+        } finally {
+          uploadToGithub.textContent = '上传到Github';
+          uploadToGithub.disabled = false;
+        }
+      });
+    }
+    
+    // 从Github下载
+    const downloadFromGithub = document.getElementById('downloadFromGithub');
+    if (downloadFromGithub) {
+      downloadFromGithub.addEventListener('click', async function() {
+        const username = document.getElementById('githubUsername').value.trim();
+        const repo = document.getElementById('githubRepo').value.trim();
+        const branch = document.getElementById('githubBranch').value.trim() || 'main';
+        const token = document.getElementById('githubToken').value.trim();
+        
+        if (!username || !repo || !token) {
+          alert('请填写完整的Github配置信息');
+          return;
+        }
+        
+        try {
+          downloadFromGithub.textContent = '获取文件列表...';
+          downloadFromGithub.disabled = true;
+          
+          const backupFiles = await githubSync.getBackupFiles(username, repo, branch, token);
+          
+          if (backupFiles.length === 0) {
+            alert('未找到备份文件');
+            return;
+          }
+          
+          // 默认选择最新的备份文件，也可以让用户选择
+          const selectedFile = backupFiles[0]; // 最新的文件
+          
+          downloadFromGithub.textContent = '下载中...';
+          
+          const backupData = await githubSync.downloadFromGithub(username, repo, branch, token, selectedFile.name);
+          
+          // 恢复数据到localStorage
+          localStorage.clear();
+          for (const [key, value] of Object.entries(backupData)) {
+            localStorage.setItem(key, value);
+          }
+          
+          alert(`从Github恢复数据成功！\n文件: ${selectedFile.name}`);
+          githubSyncPanel.style.display = 'none';
+          
+          // 刷新页面以应用新数据
+          location.reload();
+        } catch (error) {
+          alert(`下载失败: ${error.message}`);
+        } finally {
+          downloadFromGithub.textContent = '从Github下载';
+          downloadFromGithub.disabled = false;
+        }
+      });
+    }
+  });
 
   // 页面加载完成后初始化数据
   loadData();
