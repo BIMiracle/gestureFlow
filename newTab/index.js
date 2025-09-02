@@ -1,3 +1,19 @@
+// 动态加载Google API库
+function loadGoogleAPI() {
+  return new Promise((resolve, reject) => {
+    if (typeof gapi !== 'undefined') {
+      resolve();
+      return;
+    }
+    
+    const script = document.createElement('script');
+    script.src = 'https://apis.google.com/js/api.js';
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Google API'));
+    document.head.appendChild(script);
+  });
+}
+
 (function () {
   // 获取windmill-top元素
   const windmillTop = document.querySelector(".windmill-top");
@@ -93,7 +109,7 @@
         }
 
         // 添加特殊类名（如果有）
-        if (site.name === "Gmail" || site.target === "infinity://gmail" || site.target === "https: //mail.google.com/mail/u/0") {
+        if (site.name === "Gmail" || site.target === "infinity://gmail" || site.target === "https://mail.google.com/mail/u/0") {
           appIcon.classList.add("gmail-icon");
           // 添加Gmail未读邮件数显示
           const notificationBadge = document.createElement("div");
@@ -1328,29 +1344,360 @@
   initSliderProgress(maskOpacitySlider);
   initSliderProgress(blurSlider);
 
-  // 获取Gmail未读邮件数
-  function fetchGmailUnreadCount(badgeElement) {
-    // 模拟获取未读邮件数，实际应用中需要集成Gmail API
-    // 这里先使用localStorage存储的模拟数据
-    const unreadCount = localStorage.getItem('gmailUnreadCount') || 0;
+  // Gmail API配置管理函数
+  function loadGmailApiConfig() {
+    const clientId = localStorage.getItem('gmailClientId') || '';
+    const apiKey = localStorage.getItem('gmailApiKey') || '';
     
-    if (unreadCount > 0) {
-      badgeElement.textContent = unreadCount > 99 ? '99+' : unreadCount;
+    document.getElementById('gmailClientId').value = clientId;
+    document.getElementById('gmailApiKey').value = apiKey;
+    
+    updateGmailApiStatus('info', '请配置Gmail API凭据以获取真实邮件数量');
+  }
+  
+  function saveGmailApiConfig() {
+    const clientId = document.getElementById('gmailClientId').value.trim();
+    const apiKey = document.getElementById('gmailApiKey').value.trim();
+    
+    if (clientId) {
+      localStorage.setItem('gmailClientId', clientId);
+    }
+    if (apiKey) {
+      localStorage.setItem('gmailApiKey', apiKey);
+    }
+    
+    return { clientId, apiKey };
+  }
+  
+  function updateGmailApiStatus(type, message) {
+    const statusElement = document.getElementById('gmailApiStatus');
+    if (statusElement) {
+      statusElement.className = `gmail-api-status ${type}`;
+      statusElement.textContent = message;
+    }
+  }
+  
+  async function authorizeGmailApi() {
+    const config = saveGmailApiConfig();
+    
+    if (!config.clientId) {
+      updateGmailApiStatus('error', '请输入客户端ID');
+      return;
+    }
+    
+    updateGmailApiStatus('info', '正在加载Google API库...');
+    
+    try {
+      // 动态加载Google API库
+      await loadGoogleAPI();
+      
+      updateGmailApiStatus('info', '正在初始化Gmail API授权...');
+      
+      // 初始化Gmail API
+      gapi.load('auth2', function() {
+        gapi.auth2.init({
+          client_id: config.clientId
+        }).then(function() {
+          const authInstance = gapi.auth2.getAuthInstance();
+          return authInstance.signIn({
+            scope: 'https://www.googleapis.com/auth/gmail.readonly'
+          });
+        }).then(function(user) {
+          const authResponse = user.getAuthResponse();
+          localStorage.setItem('gmailAccessToken', authResponse.access_token);
+          localStorage.setItem('gmailRefreshToken', authResponse.refresh_token || '');
+          localStorage.setItem('gmailTokenExpiry', (Date.now() + authResponse.expires_in * 1000).toString());
+          
+          updateGmailApiStatus('success', 'Gmail API授权成功！');
+          
+          // 重新初始化Gmail API实例
+          if (window.gmailAPI) {
+            window.gmailAPI = new GmailAPI();
+          }
+        }).catch(function(error) {
+          console.error('Gmail授权失败:', error);
+          updateGmailApiStatus('error', '授权失败: ' + (error.error || error.message || '未知错误'));
+        });
+      });
+    } catch (error) {
+      console.error('加载Google API库失败:', error);
+      updateGmailApiStatus('error', 'Google API库加载失败，请检查网络连接');
+    }
+  }
+  
+  function testGmailConnection() {
+    const config = saveGmailApiConfig();
+    
+    if (!config.clientId || !config.apiKey) {
+      updateGmailApiStatus('error', '请先配置客户端ID和API密钥');
+      return;
+    }
+    
+    const accessToken = localStorage.getItem('gmailAccessToken');
+    if (!accessToken) {
+      updateGmailApiStatus('error', '请先进行Gmail授权');
+      return;
+    }
+    
+    updateGmailApiStatus('info', '正在测试Gmail连接...');
+    
+    // 测试API连接
+    fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages?q=is:unread&maxResults=1', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        updateGmailApiStatus('success', 'Gmail连接测试成功！');
+        return response.json();
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+    })
+    .then(data => {
+      console.log('Gmail API测试响应:', data);
+    })
+    .catch(error => {
+      console.error('Gmail连接测试失败:', error);
+      updateGmailApiStatus('error', '连接测试失败: ' + error.message);
+    });
+  }
+
+  // Gmail API集成类
+  class GmailAPI {
+    constructor() {
+      this.clientId = localStorage.getItem('gmailClientId') || '';
+      this.apiKey = localStorage.getItem('gmailApiKey') || '';
+      this.accessToken = localStorage.getItem('gmailAccessToken') || '';
+      this.refreshToken = localStorage.getItem('gmailRefreshToken') || '';
+      this.tokenExpiry = localStorage.getItem('gmailTokenExpiry') || 0;
+    }
+    
+    // 检查是否已配置API
+    isConfigured() {
+      return this.clientId && this.apiKey;
+    }
+    
+    // 检查访问令牌是否有效
+    isTokenValid() {
+      return this.accessToken && Date.now() < this.tokenExpiry;
+    }
+    
+    // 刷新访问令牌
+    async refreshAccessToken() {
+      if (!this.refreshToken) {
+        throw new Error('没有刷新令牌');
+      }
+      
+      try {
+        const response = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({
+            client_id: this.clientId,
+            refresh_token: this.refreshToken,
+            grant_type: 'refresh_token'
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('刷新令牌失败');
+        }
+        
+        const data = await response.json();
+        this.accessToken = data.access_token;
+        this.tokenExpiry = Date.now() + (data.expires_in * 1000);
+        
+        // 保存到localStorage
+        localStorage.setItem('gmailAccessToken', this.accessToken);
+        localStorage.setItem('gmailTokenExpiry', this.tokenExpiry);
+        
+        return this.accessToken;
+      } catch (error) {
+        console.error('刷新访问令牌失败:', error);
+        throw error;
+      }
+    }
+    
+    // 获取有效的访问令牌
+    async getValidAccessToken() {
+      if (this.isTokenValid()) {
+        return this.accessToken;
+      }
+      
+      if (this.refreshToken) {
+        return await this.refreshAccessToken();
+      }
+      
+      throw new Error('需要重新授权');
+    }
+    
+    // 获取未读邮件数
+    async getUnreadCount() {
+      try {
+        const accessToken = await this.getValidAccessToken();
+        
+        const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages?q=is:unread&maxResults=1', {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('获取邮件失败');
+        }
+        
+        const data = await response.json();
+        return data.resultSizeEstimate || 0;
+      } catch (error) {
+        console.error('获取Gmail未读邮件数失败:', error);
+        // 回退到localStorage中的模拟数据
+        return localStorage.getItem('gmailUnreadCount') || 0;
+      }
+    }
+    
+    // 启动OAuth授权流程
+    async authorize() {
+      if (!this.isConfigured()) {
+        throw new Error('请先配置Gmail API客户端ID和API密钥');
+      }
+      
+      const scope = 'https://www.googleapis.com/auth/gmail.readonly';
+      const redirectUri = chrome.identity ? chrome.identity.getRedirectURL() : window.location.origin;
+      
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+        `client_id=${this.clientId}&` +
+        `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+        `response_type=code&` +
+        `scope=${encodeURIComponent(scope)}&` +
+        `access_type=offline&` +
+        `prompt=consent`;
+      
+      // 在Chrome扩展环境中使用chrome.identity API
+      if (chrome.identity) {
+        return new Promise((resolve, reject) => {
+          chrome.identity.launchWebAuthFlow({
+            url: authUrl,
+            interactive: true
+          }, (responseUrl) => {
+            if (chrome.runtime.lastError) {
+              reject(new Error(chrome.runtime.lastError.message));
+              return;
+            }
+            
+            const url = new URL(responseUrl);
+            const code = url.searchParams.get('code');
+            
+            if (code) {
+              this.exchangeCodeForTokens(code, redirectUri)
+                .then(resolve)
+                .catch(reject);
+            } else {
+              reject(new Error('授权失败'));
+            }
+          });
+        });
+      } else {
+        // 在普通网页环境中打开新窗口
+        window.open(authUrl, 'gmail-auth', 'width=500,height=600');
+        throw new Error('请在弹出窗口中完成授权，然后手动输入授权码');
+      }
+    }
+    
+    // 交换授权码获取令牌
+    async exchangeCodeForTokens(code, redirectUri) {
+      try {
+        const response = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({
+            client_id: this.clientId,
+            code: code,
+            grant_type: 'authorization_code',
+            redirect_uri: redirectUri
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('交换令牌失败');
+        }
+        
+        const data = await response.json();
+        this.accessToken = data.access_token;
+        this.refreshToken = data.refresh_token;
+        this.tokenExpiry = Date.now() + (data.expires_in * 1000);
+        
+        // 保存到localStorage
+        localStorage.setItem('gmailAccessToken', this.accessToken);
+        localStorage.setItem('gmailRefreshToken', this.refreshToken);
+        localStorage.setItem('gmailTokenExpiry', this.tokenExpiry);
+        
+        return data;
+      } catch (error) {
+        console.error('交换令牌失败:', error);
+        throw error;
+      }
+    }
+  }
+  
+  // 创建Gmail API实例
+  const gmailAPI = new GmailAPI();
+  
+  // 获取Gmail未读邮件数
+  async function fetchGmailUnreadCount(badgeElement) {
+    try {
+      let unreadCount;
+      
+      // 如果配置了Gmail API，尝试获取真实数据
+      if (gmailAPI.isConfigured() && gmailAPI.accessToken) {
+        unreadCount = await gmailAPI.getUnreadCount();
+        // 更新localStorage中的缓存
+        localStorage.setItem('gmailUnreadCount', unreadCount);
+      } else {
+        // 使用localStorage中的模拟数据
+        unreadCount = localStorage.getItem('gmailUnreadCount') || 0;
+      }
+      
+      updateGmailBadge(badgeElement, unreadCount);
+    } catch (error) {
+      console.error('获取Gmail未读邮件数失败:', error);
+      // 回退到localStorage中的数据
+      const unreadCount = localStorage.getItem('gmailUnreadCount') || 0;
+      updateGmailBadge(badgeElement, unreadCount);
+    }
+    
+    // 定期更新未读邮件数（每5分钟）
+    setInterval(async () => {
+      try {
+        let newCount;
+        
+        if (gmailAPI.isConfigured() && gmailAPI.accessToken) {
+          newCount = await gmailAPI.getUnreadCount();
+          localStorage.setItem('gmailUnreadCount', newCount);
+        } else {
+          newCount = localStorage.getItem('gmailUnreadCount') || 0;
+        }
+        
+        updateGmailBadge(badgeElement, newCount);
+      } catch (error) {
+        console.error('定期更新Gmail未读邮件数失败:', error);
+      }
+    }, 300000); // 5分钟
+  }
+  
+  // 更新Gmail徽章显示
+  function updateGmailBadge(badgeElement, count) {
+    if (count > 0) {
+      badgeElement.textContent = count > 99 ? '99+' : count;
       badgeElement.style.display = 'flex';
     } else {
       badgeElement.style.display = 'none';
     }
-    
-    // 定期更新未读邮件数（每5分钟）
-    setInterval(() => {
-      const newCount = localStorage.getItem('gmailUnreadCount') || 0;
-      if (newCount > 0) {
-        badgeElement.textContent = newCount > 99 ? '99+' : newCount;
-        badgeElement.style.display = 'flex';
-      } else {
-        badgeElement.style.display = 'none';
-      }
-    }, 300000); // 5分钟
   }
   
   // 设置Gmail未读邮件数（用于测试）
@@ -1518,28 +1865,174 @@
 
   const githubSync = new GithubSync();
 
+  // 导入配置功能
+  function importConfig(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          
+          // 清空当前localStorage
+          localStorage.clear();
+          
+          // 恢复数据
+          for (const [key, value] of Object.entries(data)) {
+            localStorage.setItem(key, value);
+          }
+          
+          console.log('配置导入成功');
+          resolve();
+        } catch (error) {
+          console.error('导入配置失败:', error);
+          reject(error);
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
+  }
+
   // 事件监听器
   document.addEventListener('DOMContentLoaded', function() {
-    // 导出按钮事件
-    const exportBtn = document.getElementById('exportBtn');
-    if (exportBtn) {
-      exportBtn.addEventListener('click', exportConfig);
-    }
+    // 模式切换逻辑
+    const modeOptions = document.querySelectorAll('.mode-option');
+    const standardSettings = document.getElementById('standardSettings');
+    const minimalSettings = document.getElementById('minimalSettings');
     
-    // Github同步按钮事件
-    const githubSyncBtn = document.getElementById('githubSyncBtn');
-    const githubSyncPanel = document.getElementById('githubSyncPanel');
-    const cancelGithubSync = document.getElementById('cancelGithubSync');
+    modeOptions.forEach(option => {
+      option.addEventListener('click', function() {
+        const mode = this.dataset.mode;
+        
+        // 更新激活状态
+        modeOptions.forEach(opt => opt.classList.remove('active'));
+        this.classList.add('active');
+        
+        // 切换设置面板
+        if (mode === 'standard') {
+          standardSettings.style.display = 'block';
+          minimalSettings.style.display = 'none';
+        } else {
+          standardSettings.style.display = 'none';
+          minimalSettings.style.display = 'block';
+        }
+      });
+    });
     
-    if (githubSyncBtn && githubSyncPanel) {
-      githubSyncBtn.addEventListener('click', function() {
-        githubSyncPanel.style.display = githubSyncPanel.style.display === 'none' ? 'block' : 'none';
+    // 导出数据事件（标准模式和极简模式）
+    const exportItems = ['exportDataItem', 'exportDataItemMinimal'];
+    exportItems.forEach(id => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.addEventListener('click', exportConfig);
+      }
+    });
+    
+    // 导入数据事件（标准模式和极简模式）
+    const importItems = ['importDataItem', 'importDataItemMinimal'];
+    const importFileInput = document.getElementById('importFileInput');
+    
+    importItems.forEach(id => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.addEventListener('click', function() {
+          importFileInput.click();
+        });
+      }
+    });
+    
+    // 文件导入处理
+    if (importFileInput) {
+      importFileInput.addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          try {
+            await importConfig(file);
+            alert('导入成功！页面将刷新以应用新配置。');
+            location.reload();
+          } catch (error) {
+            alert('导入失败：' + error.message);
+          }
+          // 清空文件输入
+          this.value = '';
+        }
       });
     }
     
-    if (cancelGithubSync && githubSyncPanel) {
-      cancelGithubSync.addEventListener('click', function() {
-        githubSyncPanel.style.display = 'none';
+    // Github同步事件（标准模式和极简模式）
+    const githubSyncItems = ['githubSyncItem', 'githubSyncItemMinimal'];
+    const githubSyncModal = document.getElementById('githubSyncModal');
+    const closeGithubModal = document.getElementById('closeGithubModal');
+    
+    githubSyncItems.forEach(id => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.addEventListener('click', function() {
+          githubSyncModal.style.display = 'flex';
+        });
+      }
+    });
+    
+    // 关闭Github同步模态框
+    if (closeGithubModal) {
+      closeGithubModal.addEventListener('click', function() {
+        githubSyncModal.style.display = 'none';
+      });
+    }
+    
+    // 点击模态框背景关闭
+    if (githubSyncModal) {
+      githubSyncModal.addEventListener('click', function(e) {
+        if (e.target === githubSyncModal) {
+          githubSyncModal.style.display = 'none';
+        }
+      });
+    }
+    
+    // Gmail API配置事件监听器
+    const gmailApiConfigItems = ['gmailApiConfigMinimal'];
+    const gmailApiModal = document.getElementById('gmailApiModal');
+    const closeGmailApiModal = document.getElementById('closeGmailApiModal');
+    
+    gmailApiConfigItems.forEach(id => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.addEventListener('click', function() {
+          gmailApiModal.style.display = 'flex';
+          loadGmailApiConfig();
+        });
+      }
+    });
+    
+    // 关闭Gmail API配置模态框
+    if (closeGmailApiModal) {
+      closeGmailApiModal.addEventListener('click', function() {
+        gmailApiModal.style.display = 'none';
+      });
+    }
+    
+    // 点击Gmail API模态框背景关闭
+    if (gmailApiModal) {
+      gmailApiModal.addEventListener('click', function(e) {
+        if (e.target === gmailApiModal) {
+          gmailApiModal.style.display = 'none';
+        }
+      });
+    }
+    
+    // Gmail API授权按钮
+    const authorizeGmail = document.getElementById('authorizeGmail');
+    if (authorizeGmail) {
+      authorizeGmail.addEventListener('click', function() {
+        authorizeGmailApi();
+      });
+    }
+    
+    // Gmail API测试连接按钮
+    const testGmailConnectionBtn = document.getElementById('testGmailConnection');
+    if (testGmailConnectionBtn) {
+      testGmailConnectionBtn.addEventListener('click', function() {
+        testGmailConnection();
       });
     }
     
@@ -1580,7 +2073,7 @@
           await githubSync.uploadToGithub(username, repo, branch, token, filename, jsonString);
           
           alert('上传到Github成功！');
-          githubSyncPanel.style.display = 'none';
+          githubSyncModal.style.display = 'none';
         } catch (error) {
           alert(`上传失败: ${error.message}`);
         } finally {
@@ -1629,7 +2122,7 @@
           }
           
           alert(`从Github恢复数据成功！\n文件: ${selectedFile.name}`);
-          githubSyncPanel.style.display = 'none';
+          githubSyncModal.style.display = 'none';
           
           // 刷新页面以应用新数据
           location.reload();

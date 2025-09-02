@@ -540,12 +540,47 @@ nav {
 .setting-group {
 	margin-bottom: 2.5vmin;
 }
+.setting-group:last-child {
+	margin-bottom: 0;
+}
 
 .setting-group h4 {
 	margin: 0 0 1vmin 0;
-	color: #333;
+	color: #333333;
 	font-size: 2vmin;
 	font-weight: 600;
+}
+
+/* 极简模式设置样式 */
+.minimal-settings {
+	color: white;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	min-height: 60vh;
+	padding: 2vmin;
+}
+
+.minimal-settings .setting-group {
+	width: 100%;
+	max-width: 50vmin;
+	margin-bottom: 3vmin;
+	color: #333333;
+}
+
+.minimal-settings .setting-group h4 {
+	color: #333333;
+	text-align: center;
+	margin-bottom: 2vmin;
+}
+
+.minimal-settings .data-item-content h5 {
+	color: #333333;
+}
+
+.minimal-settings .data-item-content p {
+	color: #333333;
 }
 
 /* 壁纸预览样式 */
@@ -1014,48 +1049,113 @@ footer {
 	display: none;
 }
 
-/* 数据管理样式 */
-.data-management {
-	display: flex;
-	gap: 1vmin;
+/* 数据管理列表样式 */
+.data-management-list {
 	margin-top: 1vmin;
 }
 
-.export-btn,
-.github-sync-btn {
-	padding: 1vmin 2vmin;
-	border: none;
-	border-radius: 0.5vmin;
-	cursor: pointer;
-	font-size: var(--item-font-size);
-	transition: all 0.3s ease;
-}
-
-.export-btn {
-	background-color: #4caf50;
-	color: white;
-}
-
-.export-btn:hover {
-	background-color: #45a049;
-}
-
-.github-sync-btn {
-	background-color: #2196f3;
-	color: white;
-}
-
-.github-sync-btn:hover {
-	background-color: #1976d2;
-}
-
-/* Github同步面板样式 */
-.github-sync-panel {
-	margin-top: 2vmin;
+.data-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 	padding: 2vmin;
-	border: 1px solid rgba(255, 255, 255, 0.2);
-	border-radius: 1vmin;
+	margin-bottom: 1vmin;
 	background-color: rgba(255, 255, 255, 0.05);
+	border-radius: 1vmin;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.data-item:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+	border-color: rgba(255, 255, 255, 0.2);
+}
+
+.data-item:last-child {
+	margin-bottom: 0;
+}
+
+.data-item-content h5 {
+	margin: 0 0 0.5vmin 0;
+	color: #333333;
+	font-size: var(--font-16);
+	font-weight: 500;
+}
+
+.data-item-content p {
+	margin: 0;
+	color: #333333;
+	font-size: var(--item-font-size);
+}
+
+.data-item-arrow {
+	color: #333333;
+	font-size: 2.5vmin;
+	font-weight: bold;
+	transition: transform 0.3s ease;
+}
+
+.data-item:hover .data-item-arrow {
+	transform: translateX(0.5vmin);
+}
+
+/* Github同步模态框样式 */
+.github-sync-modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.github-sync-modal .modal-content {
+	background-color: rgba(30, 30, 30, 0.95);
+	border-radius: 1.5vmin;
+	padding: 3vmin;
+	max-width: 50vmin;
+	width: 90%;
+	max-height: 80vh;
+	overflow-y: auto;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Gmail API配置样式 */
+.gmail-api-actions {
+	display: flex;
+	gap: 1vmin;
+	margin-top: 2vmin;
+}
+
+.gmail-api-status {
+	margin-top: 2vmin;
+	padding: 1vmin;
+	border-radius: 0.5vmin;
+	font-size: 1.4vmin;
+	text-align: center;
+}
+
+.gmail-api-status.success {
+	background-color: rgba(76, 175, 80, 0.2);
+	color: #4caf50;
+	border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.gmail-api-status.error {
+	background-color: rgba(244, 67, 54, 0.2);
+	color: #f44336;
+	border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.gmail-api-status.info {
+	background-color: rgba(33, 150, 243, 0.2);
+	color: #2196f3;
+	border: 1px solid rgba(33, 150, 243, 0.3);
 }
 
 .form-group {
