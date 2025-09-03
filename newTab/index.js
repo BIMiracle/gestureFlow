@@ -1,4 +1,7 @@
 (function() {
+  const version = "1.0.0"
+  const time = new Date().getTime()
+
   // 获取windmill-top元素
   const windmillTop = document.querySelector(".windmill-top");
   const wallpaper = document.querySelector(".wallpaper");
@@ -20,12 +23,213 @@
     element.style.transform = `rotate(${roundedDegrees}deg)`;
   }
 
+  // 获取或创建默认备份数据
+  function getOrCreateBackupData () {
+    try {
+      const backupStr = localStorage.getItem('backup');
+      if (backupStr) {
+        return backupStr;
+      }
+    } catch (error) {
+      console.error('读取备份数据失败:', error);
+    }
+
+    // 创建默认备份数据，只包含一个Google网站
+    const defaultBackup = {
+      "version": "1.0.0",
+      "time": new Date().getTime(),
+      "data": {
+        "site": {
+          "sites": [
+            [
+              {
+                "name": "Google",
+                "id": "site-1f8pdlq68mxt1esf3ug2cd58ioi",
+                "uuid": "basic-old1cqht8ig7fnqapx13vjid5sg1p4",
+                "updatetime": new Date().getTime(),
+                "target": "http://www.google.com",
+                "type": "web",
+                "bgImage": "http://7xilfp.com5.z0.glb.clouddn.com/usericon/667ebfe6e35a1160bff8550471a8e3b3.png",
+                "bgType": "image",
+                "bgText": "",
+                "bgFont": 30,
+                "bgColor": "transparent"
+              }
+            ]
+          ]
+        },
+        "setting": {
+          "setting": {
+            "notice": {
+              "gmail": true,
+              "gmailNumber": true
+            },
+            "layout": {
+              "row": 3,
+              "col": 6
+            },
+            "animation": {
+              "easing": "linear"
+            },
+            "icon": {
+              "miniMode": false,
+              "shadow": false,
+              "startAnimation": false,
+              "opacity": 1,
+              "radius": 0.5,
+              "scale": 0.75,
+              "isHideIconName": false
+            }
+          }
+        },
+        "wallpaper": {
+          "id": "57eb40b7aaf6b6bc02ce3fb5",
+          "url": "https://images.unsplash.com/photo-1604863238778-c2380f6d0a96?q=80&w=1718&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          "rawUrl": "https://images.unsplash.com/photo-1604863238778-c2380f6d0a96",
+          "type": "cloud",
+          "switchType": "disabled",
+          "timeEnd": 0,
+          "index": -1,
+          "opacity": 40,
+          "blur": 0
+        }
+      }
+    };
+
+    // 保存默认数据到localStorage
+    saveBackupData(defaultBackup);
+    return defaultBackup;
+  }
+
+  // 保存备份数据到localStorage
+  function saveBackupData (data) {
+    try {
+      localStorage.setItem('backup', JSON.stringify(data));
+    } catch (error) {
+      console.error('保存备份数据失败:', error);
+    }
+  }
+
+  // 更新备份数据中的sites信息
+  function updateBackupData () {
+    try {
+      const backupData = getOrCreateBackupData();
+      backupData.data.site.sites = sitesData;
+      backupData.time = new Date().getTime();
+      saveBackupData(backupData);
+    } catch (error) {
+      console.error('更新备份数据失败:', error);
+    }
+  }
+
+  // 初始化壁纸设置
+  function initWallpaperSettings (wallpaperData) {
+    try {
+      // 设置背景壁纸
+      if (wallpaperData && wallpaperData.url) {
+        const wallpaper = document.querySelector('.wallpaper');
+        if (wallpaper) {
+          wallpaper.style.backgroundImage = `url(${wallpaperData.url})`;
+        }
+      }
+
+      // 设置遮罩浓度
+      const maskOpacitySlider = document.getElementById('maskOpacitySlider');
+      const wallpaperMask = document.querySelector('.wallpaper-mask');
+      if (maskOpacitySlider && wallpaperMask && wallpaperData && typeof wallpaperData.opacity === 'number') {
+        maskOpacitySlider.value = wallpaperData.opacity;
+        const maskOpacityValue = maskOpacitySlider.nextElementSibling;
+        if (maskOpacityValue) {
+          maskOpacityValue.textContent = `${wallpaperData.opacity}%`;
+        }
+        wallpaperMask.style.backgroundColor = `rgba(0, 0, 0, ${wallpaperData.opacity / 100})`;
+        const percentage = (wallpaperData.opacity / maskOpacitySlider.max) * 100;
+        maskOpacitySlider.style.setProperty('--progress', `${percentage}%`);
+      }
+
+      // 设置模糊度
+      const blurSlider = document.getElementById('blurSlider');
+      if (blurSlider && wallpaperData && typeof wallpaperData.blur === 'number') {
+        blurSlider.value = wallpaperData.blur;
+        const blurValue = blurSlider.nextElementSibling;
+        if (blurValue) {
+          blurValue.textContent = `${wallpaperData.blur}%`;
+        }
+        const blurPixels = (wallpaperData.blur / 100) * 20;
+        document.documentElement.style.setProperty('--wallpaper-filter', `${blurPixels}px`);
+        const progressPercentage = (wallpaperData.blur / blurSlider.max) * 100;
+        blurSlider.style.setProperty('--progress', `${progressPercentage}%`);
+      }
+    } catch (error) {
+      console.error('初始化壁纸设置失败:', error);
+    }
+  }
+
+  // 打开编辑网站模态框
+  function openEditModal (site) {
+    const modal = document.getElementById('addSiteModal');
+    const siteUrl = document.getElementById('siteUrl');
+    const siteName = document.getElementById('siteName');
+    const saveBtn = document.getElementById('saveBtn');
+
+    // 填充当前网站信息
+    siteUrl.value = site.url;
+    siteName.value = site.name;
+
+    // 显示模态框
+    modal.style.display = 'block';
+
+    // 移除之前的事件监听器
+    const newSaveBtn = saveBtn.cloneNode(true);
+    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+
+    // 添加编辑保存事件
+    newSaveBtn.addEventListener('click', () => {
+      saveEditedSite(site.id, siteUrl.value, siteName.value);
+    });
+  }
+
+  // 保存编辑的网站
+  function saveEditedSite (siteId, newUrl, newName) {
+    if (!newUrl || !newName) {
+      alert('请填写完整的网站信息');
+      return;
+    }
+
+    // 查找并更新网站信息
+    const siteIndex = sitesData.findIndex(site => site.id === siteId);
+    if (siteIndex !== -1) {
+      sitesData[siteIndex].url = newUrl;
+      sitesData[siteIndex].name = newName;
+
+      // 更新备份数据
+      updateBackupData();
+
+      // 重新初始化页面
+      initAllPages();
+      renderPage(0);
+
+      // 关闭模态框
+      document.getElementById('addSiteModal').style.display = 'none';
+
+      // 退出编辑模式
+      exitAllEditModes();
+
+      alert('网站信息已更新');
+    } else {
+      alert('未找到要编辑的网站');
+    }
+  }
+
   // 加载数据
   async function loadData () {
     try {
-      const response = await fetch("../data.json");
-      const data = await response.json();
-      sitesData = data.data.site.sites;
+      // 优先从localStorage读取备份数据
+      const backupData = getOrCreateBackupData();
+      sitesData = backupData.data.site.sites;
+
+      // 初始化壁纸设置
+      initWallpaperSettings(backupData.data.wallpaper);
 
       // 初始化分页点
       initPagination();
@@ -37,6 +241,29 @@
       renderPage(0);
     } catch (error) {
       console.error("加载数据失败:", error);
+      // 如果备份数据加载失败，尝试从原始data.json加载
+      try {
+        const response = await fetch("../data.json");
+        const data = await response.json();
+        sitesData = data.data.site.sites;
+
+        // 保存到备份
+        saveBackupData(data);
+
+        // 初始化壁纸设置
+        initWallpaperSettings(data.data.wallpaper);
+
+        // 初始化分页点
+        initPagination();
+
+        // 初始化所有页面
+        initAllPages();
+
+        // 渲染第一页
+        renderPage(0);
+      } catch (fallbackError) {
+        console.error("从data.json加载数据也失败:", fallbackError);
+      }
     }
   }
 
@@ -65,11 +292,8 @@
   // 获取Gmail开关状态
   function getGmailSetting () {
     try {
-      const dataStr = localStorage.getItem('data1');
-      if (dataStr) {
-        const data = JSON.parse(dataStr);
-        return data?.setting?.setting?.notice?.gmail || false;
-      }
+      const backupData = getOrCreateBackupData();
+      return backupData?.data?.setting?.setting?.notice?.gmail || false;
     } catch (error) {
       console.error('获取Gmail设置失败:', error);
     }
@@ -79,11 +303,8 @@
   // 获取Gmail未读提醒开关状态
   function getGmailNumberSetting () {
     try {
-      const dataStr = localStorage.getItem('data1');
-      if (dataStr) {
-        const data = JSON.parse(dataStr);
-        return data?.setting?.setting?.notice?.gmailNumber || false;
-      }
+      const backupData = getOrCreateBackupData();
+      return backupData?.data?.setting?.setting?.notice?.gmailNumber || false;
     } catch (error) {
       console.error('获取Gmail未读提醒设置失败:', error);
     }
@@ -178,6 +399,13 @@
         deleteBtn.addEventListener("click", (e) => {
           e.stopPropagation();
           if (confirm(`确定要删除 ${site.name} 吗？`)) {
+            // 从sitesData中删除该网站
+            const siteIndex = sitesData[pageIndex].findIndex(s => s.id === site.id || s.uuid === site.uuid);
+            if (siteIndex !== -1) {
+              sitesData[pageIndex].splice(siteIndex, 1);
+              // 同步更新localStorage
+              updateBackupData();
+            }
             appItem.remove();
           }
         });
@@ -185,7 +413,7 @@
         // 编辑按钮点击事件
         editBtn.addEventListener("click", (e) => {
           e.stopPropagation();
-          alert("编辑功能待实现");
+          openEditModal(site);
         });
 
         // 将按钮添加到appIcon中
@@ -367,10 +595,11 @@
       const startTime = performance.now();
       const initialSpeed = 360; // 初始速度（度/秒）
       const deceleration = 120; // 减速率（度/秒²）
-      const minRotation = 1080; // 最小旋转角度（3圈 3 * 360）
+      const turns = (initialSpeed / deceleration);
+      const minRotation = turns * 360; // 最小旋转角度（3圈 3 * 360）
 
       // 计算动画总时长（基于物理减速公式）
-      const duration = (initialSpeed / deceleration) * 1000;
+      const duration = turns * 1000;
       // 计算总旋转角度（匀减速运动）
       const totalRotation = (initialSpeed * duration) / 1000 / 2;
 
@@ -417,6 +646,13 @@
         requestAnimationFrame(animate);
       });
 
+      // 发起请求获取壁纸
+      const timestamp = Date.now();
+      const response = await fetch(
+        `https://infinity-api.infinitynewtab.com/random-wallpaper?_=${timestamp}`
+      );
+      const data = await response.json();
+
       // 等待动画完成
       await animationPromise;
 
@@ -424,13 +660,6 @@
       // 这里不需要重新赋值，因为在动画结束时已经设置了finalRotationForThisClick
       // 但保留这行代码以确保兼容性
       finalRotationForThisClick = currentRotation;
-
-      // 发起请求获取壁纸
-      const timestamp = Date.now();
-      const response = await fetch(
-        `https://infinity-api.infinitynewtab.com/random-wallpaper?_=${timestamp}`
-      );
-      const data = await response.json();
 
       if (data.success && data.data && data.data[0]) {
         const rawSrc = data.data[0].src.rawSrc;
@@ -1264,10 +1493,70 @@
 
   // 保存新网站
   function saveNewSite (url, name, iconType, iconData) {
-    // 这里可以实现保存逻辑
-    // 暂时只是显示成功消息
-    alert(`网站添加成功！\n地址：${url}\n名称：${name}\n图标类型：${iconType}`);
-    closeModal();
+    try {
+      // 生成新网站的唯一ID
+      const timestamp = new Date().getTime();
+      const randomId = Math.random().toString(36).substr(2, 9);
+      const siteId = `site-${timestamp}-${randomId}`;
+      const uuid = `uuid-${timestamp}-${randomId}`;
+
+      // 创建新网站对象
+      const newSite = {
+        name: name,
+        id: siteId,
+        uuid: uuid,
+        updatetime: timestamp,
+        target: url,
+        type: "web",
+        bgImage: "",
+        bgType: "color",
+        bgText: name.charAt(0).toUpperCase(),
+        bgFont: 30,
+        bgColor: "#4285f4"
+      };
+
+      // 根据图标类型设置图标属性
+      if (iconType === "auto") {
+        // 尝试获取网站favicon
+        const domain = new URL(url).hostname;
+        newSite.bgImage = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+        newSite.bgType = "image";
+        newSite.bgText = "";
+      } else if (iconType === "text" && iconData) {
+        newSite.bgType = "color";
+        newSite.bgText = iconData.text || name.charAt(0).toUpperCase();
+        newSite.bgColor = iconData.bgColor || "#4285f4";
+        newSite.bgImage = "";
+      } else if (iconType === "color" && iconData) {
+        newSite.bgType = "color";
+        newSite.bgText = name.charAt(0).toUpperCase();
+        newSite.bgColor = iconData.bgColor || "#4285f4";
+        newSite.bgImage = "";
+      } else if (iconType === "upload" && iconData) {
+        newSite.bgType = "image";
+        newSite.bgImage = iconData.imageUrl || "";
+        newSite.bgText = "";
+      }
+
+      // 添加到第一页的网站列表中
+      if (!sitesData[0]) {
+        sitesData[0] = [];
+      }
+      sitesData[0].push(newSite);
+
+      // 同步更新localStorage
+      updateBackupData();
+
+      // 重新初始化页面以显示新网站
+      initAllPages();
+      renderPage(0);
+
+      alert(`网站添加成功！\n地址：${url}\n名称：${name}`);
+      closeModal();
+    } catch (error) {
+      console.error('保存网站失败:', error);
+      alert('保存网站失败，请重试');
+    }
   }
 
   // 设置按钮点击事件
@@ -1303,6 +1592,18 @@
         wallpaperPreview.src = wallpaperUrl;
         // 更新背景壁纸
         wallpaper.style.backgroundImage = `url(${wallpaperUrl})`;
+
+        // 更新备份数据中的壁纸信息
+        try {
+          const backupData = getOrCreateBackupData();
+          backupData.data.wallpaper.url = wallpaperUrl;
+          backupData.data.wallpaper.rawUrl = rawSrc;
+          backupData.data.wallpaper.id = data.data[0].id || timestamp.toString();
+          backupData.time = timestamp;
+          saveBackupData(backupData);
+        } catch (backupError) {
+          console.error('更新壁纸备份数据失败:', backupError);
+        }
       }
     } catch (error) {
       console.error("获取壁纸失败:", error);
@@ -1322,6 +1623,16 @@
     wallpaperMask.style.backgroundColor = `rgba(0, 0, 0, ${value / 100})`;
     // 更新进度显示
     e.target.style.setProperty("--progress", `${percentage}%`);
+
+    // 更新备份数据中的遮罩浓度
+    try {
+      const backupData = getOrCreateBackupData();
+      backupData.data.wallpaper.opacity = parseInt(value);
+      backupData.time = new Date().getTime();
+      saveBackupData(backupData);
+    } catch (error) {
+      console.error('更新遮罩浓度备份数据失败:', error);
+    }
   });
 
   // 模糊度滑块
@@ -1342,6 +1653,16 @@
     );
     // 更新进度显示
     e.target.style.setProperty("--progress", `${progressPercentage}%`);
+
+    // 更新备份数据中的模糊度
+    try {
+      const backupData = getOrCreateBackupData();
+      backupData.data.wallpaper.blur = parseInt(value);
+      backupData.time = new Date().getTime();
+      saveBackupData(backupData);
+    } catch (error) {
+      console.error('更新模糊度备份数据失败:', error);
+    }
   });
 
   // 初始化CSS变量和进度显示
@@ -1597,16 +1918,13 @@
       reader.onload = function(e) {
         try {
           const data = JSON.parse(e.target.result);
+          console.log(data);
 
-          // 清空当前localStorage
-          localStorage.clear();
+          localStorage.setItem('backup', data);
 
-          // 恢复数据
-          for (const [key, value] of Object.entries(data)) {
-            localStorage.setItem(key, value);
-          }
+          // 重新加载页面以应用导入的配置
+          window.location.reload();
 
-          console.log('配置导入成功');
           resolve();
         } catch (error) {
           console.error('导入配置失败:', error);
@@ -1690,7 +2008,7 @@
 
         if (mode === 'standard') {
           console.log(standardSettingsGroup);
-          
+
           standardSettingsGroup.forEach(item => item.style.display = 'block')
           if (sharedBackupSettings) sharedBackupSettings.style.display = 'block';
           if (sharedGmailSettings) sharedGmailSettings.style.display = 'block';
