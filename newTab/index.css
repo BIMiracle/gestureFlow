@@ -538,7 +538,7 @@ nav {
 
 /* 设置组样式 */
 .setting-group {
-	margin-bottom: 2.5vmin;
+	margin-bottom: 2vmin;
 }
 .setting-group:last-child {
 	margin-bottom: 0;

@@ -1283,26 +1283,6 @@
     }
   });
 
-  // 模式选择功能
-  const modeOptions = document.querySelectorAll(".mode-option");
-  const standardSettings = document.getElementById("standardSettings");
-
-  modeOptions.forEach((option) => {
-    option.addEventListener("click", () => {
-      // 移除所有active类
-      modeOptions.forEach((opt) => opt.classList.remove("active"));
-      // 添加active类到当前选项
-      option.classList.add("active");
-
-      const mode = option.dataset.mode;
-      if (mode === "standard") {
-        standardSettings.style.display = "block";
-      } else {
-        standardSettings.style.display = "none";
-      }
-    });
-  });
-
   // 壁纸设置功能
   const changeWallpaperBtn = document.getElementById("changeWallpaperBtn");
   const wallpaperPreview = document.getElementById("wallpaperPreview");
@@ -1428,12 +1408,16 @@
           });
       });
 
-      chrome.alarms.create('gmailUnreadCountAlarm', { periodInMinutes: 1 });
-      chrome.alarms.onAlarm.addListener((alarm) => {
-        if (alarm.name === 'gmailUnreadCountAlarm') {
-          fetchGmailUnreadCount();
-        }
-      });
+      // 只添加一次监听器，避免重复添加
+      if (!window.gmailAlarmListenerAdded) {
+        chrome.alarms.create('gmailUnreadCountAlarm', { periodInMinutes: 1 });
+        chrome.alarms.onAlarm.addListener((alarm) => {
+          if (alarm.name === 'gmailUnreadCountAlarm') {
+            fetchGmailUnreadCount();
+          }
+        });
+        window.gmailAlarmListenerAdded = true;
+      }
     } catch (error) {
       console.error('获取Gmail未读邮件数失败:', error);
       updateGmailBadge(unreadCount);
@@ -1649,15 +1633,19 @@
     });
 
     // 更新设置面板显示
-    const standardSettings = document.getElementById('standardSettings');
-    const minimalSettings = document.getElementById('minimalSettings');
+    const standardSettingsGroup = document.querySelectorAll(".standard-settings-group");
+    const sharedBackupSettings = document.querySelector('.shared-backup-settings');
+    const sharedGmailSettings = document.querySelector('.shared-gmail-settings');
+
     if (savedMode === 'standard') {
-      standardSettings.style.display = 'block';
-      minimalSettings.style.display = 'none';
+      standardSettingsGroup.forEach(item => item.style.display = 'block')
     } else {
-      standardSettings.style.display = 'none';
-      minimalSettings.style.display = 'block';
+      standardSettingsGroup.forEach(item => item.style.display = 'none')
     }
+
+    // 确保共享设置组始终可见
+    if (sharedBackupSettings) sharedBackupSettings.style.display = 'block';
+    if (sharedGmailSettings) sharedGmailSettings.style.display = 'block';
   }
 
   // 应用模式
@@ -1683,8 +1671,7 @@
 
     // 模式切换逻辑
     const modeOptions = document.querySelectorAll('.mode-option');
-    const standardSettings = document.getElementById('standardSettings');
-    const minimalSettings = document.getElementById('minimalSettings');
+    const standardSettingsGroup = document.querySelectorAll('.standard-settings-group');
 
     modeOptions.forEach(option => {
       option.addEventListener('click', function() {
@@ -1698,36 +1685,37 @@
         saveModeSettings(mode);
 
         // 切换设置面板
+        const sharedBackupSettings = document.querySelector('.shared-backup-settings');
+        const sharedGmailSettings = document.querySelector('.shared-gmail-settings');
+
         if (mode === 'standard') {
-          standardSettings.style.display = 'block';
-          minimalSettings.style.display = 'none';
+          console.log(standardSettingsGroup);
+          
+          standardSettingsGroup.forEach(item => item.style.display = 'block')
+          if (sharedBackupSettings) sharedBackupSettings.style.display = 'block';
+          if (sharedGmailSettings) sharedGmailSettings.style.display = 'block';
         } else {
-          standardSettings.style.display = 'none';
-          minimalSettings.style.display = 'block';
+          standardSettingsGroup.forEach(item => item.style.display = 'none')
+          if (sharedBackupSettings) sharedBackupSettings.style.display = 'block';
+          if (sharedGmailSettings) sharedGmailSettings.style.display = 'block';
         }
       });
     });
 
-    // 导出数据事件（标准模式和极简模式）
-    const exportItems = ['exportDataItem', 'exportDataItemMinimal'];
-    exportItems.forEach(id => {
-      const element = document.getElementById(id);
-      if (element) {
-        element.addEventListener('click', exportConfig);
-      }
+    // 导出数据事件（使用共享的class选择器）
+    const exportElements = document.querySelectorAll('.export-data-item');
+    exportElements.forEach(element => {
+      element.addEventListener('click', exportConfig);
     });
 
-    // 导入数据事件（标准模式和极简模式）
-    const importItems = ['importDataItem', 'importDataItemMinimal'];
+    // 导入数据事件（使用共享的class选择器）
+    const importElements = document.querySelectorAll('.import-data-item');
     const importFileInput = document.getElementById('importFileInput');
 
-    importItems.forEach(id => {
-      const element = document.getElementById(id);
-      if (element) {
-        element.addEventListener('click', function() {
-          importFileInput.click();
-        });
-      }
+    importElements.forEach(element => {
+      element.addEventListener('click', function() {
+        importFileInput.click();
+      });
     });
 
     // 文件导入处理
@@ -1748,18 +1736,15 @@
       });
     }
 
-    // Github同步事件（标准模式和极简模式）
-    const githubSyncItems = ['githubSyncItem', 'githubSyncItemMinimal'];
+    // Github同步事件（使用共享的class选择器）
+    const githubSyncElements = document.querySelectorAll('.github-sync-item');
     const githubSyncModal = document.getElementById('githubSyncModal');
     const closeGithubModal = document.getElementById('closeGithubModal');
 
-    githubSyncItems.forEach(id => {
-      const element = document.getElementById(id);
-      if (element) {
-        element.addEventListener('click', function() {
-          githubSyncModal.style.display = 'flex';
-        });
-      }
+    githubSyncElements.forEach(element => {
+      element.addEventListener('click', function() {
+        githubSyncModal.style.display = 'flex';
+      });
     });
 
     // 关闭Github同步模态框
@@ -1831,7 +1816,9 @@
         if (gmailNumberToggle.checked && !localStorage.getItem('gmailAccessToken')) {
           fetchGmailUnreadCount();
         } else {
-          chrome.alarms.clear('gmailUnreadCountAlarm', () => { });
+          chrome.alarms.clear('gmailUnreadCountAlarm', () => {
+            window.gmailAlarmListenerAdded = false;
+          });
         }
       } catch (error) {
         console.error('保存Gmail设置失败:', error);

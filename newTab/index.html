@@ -173,7 +173,7 @@
 
                 <!-- 标准模式设置 -->
                 <div class="standard-settings" id="standardSettings">
-                  <div class="setting-group">
+                  <div class="setting-group standard-settings-group">
                     <h4>壁纸</h4>
                     <div class="wallpaper-preview">
                       <img
@@ -188,8 +188,7 @@
                       </div>
                     </div>
                   </div>
-
-                  <div class="setting-group">
+                  <div class="setting-group standard-settings-group">
                     <h4>遮罩浓度</h4>
                     <div class="slider-container">
                       <input
@@ -203,8 +202,7 @@
                       <span class="slider-value">40%</span>
                     </div>
                   </div>
-
-                  <div class="setting-group">
+                  <div class="setting-group standard-settings-group">
                     <h4>模糊度</h4>
                     <div class="slider-container">
                       <input
@@ -220,24 +218,25 @@
                     </div>
                   </div>
 
-                  <div class="setting-group">
+                  <!-- 共享的备份与恢复设置组 -->
+                  <div class="setting-group shared-backup-settings">
                     <h4>备份与恢复</h4>
                     <div class="data-management-list">
-                      <div class="data-item" id="exportDataItem">
+                      <div class="data-item export-data-item">
                         <div class="data-item-content">
                           <h5>导出备份数据</h5>
                           <p>从当前本地数据导出</p>
                         </div>
                         <div class="data-item-arrow">›</div>
                       </div>
-                      <div class="data-item" id="importDataItem">
+                      <div class="data-item import-data-item">
                         <div class="data-item-content">
                           <h5>导入备份数据</h5>
                           <p>从备份文件恢复数据</p>
                         </div>
                         <div class="data-item-arrow">›</div>
                       </div>
-                      <div class="data-item" id="githubSyncItem">
+                      <div class="data-item github-sync-item">
                         <div class="data-item-content">
                           <h5>Github同步</h5>
                           <p>上传或恢复数据</p>
@@ -247,7 +246,8 @@
                     </div>
                   </div>
 
-                  <div class="setting-group">
+                  <!-- 共享的Gmail设置组 -->
+                  <div class="setting-group shared-gmail-settings">
                     <div class="data-management-list">
                       <div class="data-item">
                         <div class="data-item-content">
@@ -266,47 +266,6 @@
                           <input type="checkbox" id="gmailNumberToggle" class="toggle-input">
                           <label for="gmailNumberToggle" class="toggle-label"></label>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 极简模式设置 -->
-                <div class="minimal-settings" id="minimalSettings" style="display: none;">
-                  <div class="setting-group">
-                    <h4>备份与恢复</h4>
-                    <div class="data-management-list">
-                      <div class="data-item" id="exportDataItemMinimal">
-                        <div class="data-item-content">
-                          <h5>导出备份数据</h5>
-                          <p>从当前本地数据导出</p>
-                        </div>
-                        <div class="data-item-arrow">›</div>
-                      </div>
-                      <div class="data-item" id="importDataItemMinimal">
-                        <div class="data-item-content">
-                          <h5>导入备份数据</h5>
-                          <p>从备份文件恢复数据</p>
-                        </div>
-                        <div class="data-item-arrow">›</div>
-                      </div>
-                      <div class="data-item" id="githubSyncItemMinimal">
-                        <div class="data-item-content">
-                          <h5>Github同步</h5>
-                          <p>上传或恢复数据</p>
-                        </div>
-                        <div class="data-item-arrow">›</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div class="setting-group">
-                    <div class="data-management-list">
-                      <div class="data-item" id="gmailApiConfigMinimal">
-                        <div class="data-item-content">
-                          <h5>Gmail邮箱</h5>
-                        </div>
-                        <div class="data-item-arrow">›</div>
                       </div>
                     </div>
                   </div>
@@ -381,5 +340,7 @@
     </div>
     
   <script src="index.js"></script>
+  <script src="../content.js"></script>
+  <link rel="stylesheet" href="../content.css">
 </body>
 </html>
