@@ -9,7 +9,17 @@
   "permissions": [
     "tabs",
     "storage",
-    "sessions"
+    "sessions",
+    "alarms",
+    "identity"
+  ],
+  "oauth2": {
+    "client_id": "358923413697-mhj60u8drfifme1u3hnqv7iq2con7gfb.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/gmail.readonly"
+    ]
+  },
+  "host_permissions": [
   ],
   "action": {
     "default_icon": {

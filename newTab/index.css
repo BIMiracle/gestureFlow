@@ -562,6 +562,28 @@ nav {
 	padding: 2vmin;
 }
 
+/* 极简模式样式 - 隐藏main和pagination-dots */
+body.minimal-mode main {
+	display: none;
+}
+
+body.minimal-mode .pagination-dots {
+	display: none;
+}
+
+/* 极简模式下header垂直居中 */
+body.minimal-mode .container {
+	justify-content: center;
+	padding-top: 0;
+}
+
+body.minimal-mode header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
 .minimal-settings .setting-group {
 	width: 100%;
 	max-width: 50vmin;
@@ -1125,7 +1147,7 @@ footer {
 	border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Gmail API配置样式 */
+/* Gmail授权配置样式 */
 .gmail-api-actions {
 	display: flex;
 	gap: 1vmin;
@@ -1158,6 +1180,17 @@ footer {
 	border: 1px solid rgba(33, 150, 243, 0.3);
 }
 
+.info-text {
+	color: rgba(255, 255, 255, 0.7);
+	font-size: 1.3vmin;
+	line-height: 1.4;
+	margin: 0;
+	padding: 1vmin;
+	background-color: rgba(255, 255, 255, 0.05);
+	border-radius: 0.5vmin;
+	border-left: 3px solid rgba(33, 150, 243, 0.5);
+}
+
 .form-group {
 	margin-bottom: 1.5vmin;
 }
@@ -1167,6 +1200,59 @@ footer {
 	margin-bottom: 0.5vmin;
 	color: #333333;
 	font-size: var(--item-font-size);
+}
+
+/* 开关样式 */
+.toggle-switch {
+	position: relative;
+	display: inline-block;
+	width: 4vmin;
+	height: 2.2vmin;
+}
+
+.toggle-input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.toggle-label {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(255, 255, 255, 0.2);
+	border-radius: 2.2vmin;
+	transition: 0.3s;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.toggle-label:before {
+	position: absolute;
+	content: "";
+	height: 1.6vmin;
+	width: 1.6vmin;
+	left: 0.2vmin;
+	bottom: 0.2vmin;
+	background-color: white;
+	border-radius: 50%;
+	transition: 0.3s;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-input:checked + .toggle-label {
+	background-color: rgba(76, 175, 80, 0.8);
+	border-color: rgba(76, 175, 80, 1);
+}
+
+.toggle-input:checked + .toggle-label:before {
+	transform: translateX(1.8vmin);
+}
+
+.toggle-input:focus + .toggle-label {
+	box-shadow: 0 0 1px rgba(76, 175, 80, 0.8);
 }
 
 .form-group input {

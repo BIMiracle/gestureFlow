@@ -246,6 +246,29 @@
                       </div>
                     </div>
                   </div>
+
+                  <div class="setting-group">
+                    <div class="data-management-list">
+                      <div class="data-item">
+                        <div class="data-item-content">
+                          <h5>Gmail邮箱开关</h5>
+                        </div>
+                        <div class="toggle-switch">
+                          <input type="checkbox" id="gmailToggle" class="toggle-input">
+                          <label for="gmailToggle" class="toggle-label"></label>
+                        </div>
+                      </div>
+                      <div class="data-item">
+                        <div class="data-item-content">
+                          <h5>Gmail邮箱未读提醒</h5>
+                        </div>
+                        <div class="toggle-switch">
+                          <input type="checkbox" id="gmailNumberToggle" class="toggle-input">
+                          <label for="gmailNumberToggle" class="toggle-label"></label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <!-- 极简模式设置 -->
@@ -278,12 +301,10 @@
                   </div>
                   
                   <div class="setting-group">
-                    <h4>Gmail API配置</h4>
                     <div class="data-management-list">
                       <div class="data-item" id="gmailApiConfigMinimal">
                         <div class="data-item-content">
-                          <h5>Gmail API设置</h5>
-                          <p>配置API以获取真实邮件数</p>
+                          <h5>Gmail邮箱</h5>
                         </div>
                         <div class="data-item-arrow">›</div>
                       </div>
@@ -327,30 +348,7 @@
           </div>
         </div>
 
-        <!-- Gmail API配置模态框 -->
-        <div class="github-sync-modal" id="gmailApiModal" style="display: none;">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h3>Gmail API配置</h3>
-              <button class="close-btn" id="closeGmailApiModal">×</button>
-            </div>
-            <div class="modal-content">
-              <div class="form-group">
-                <label for="gmailClientId">客户端ID</label>
-                <input type="text" id="gmailClientId" placeholder="输入Gmail API客户端ID" />
-              </div>
-              <div class="form-group">
-                <label for="gmailApiKey">API密钥</label>
-                <input type="text" id="gmailApiKey" placeholder="输入Gmail API密钥" />
-              </div>
-              <div class="gmail-api-actions">
-                <button class="upload-btn" id="authorizeGmail">授权Gmail</button>
-                <button class="download-btn" id="testGmailConnection">测试连接</button>
-              </div>
-              <div class="gmail-api-status" id="gmailApiStatus"></div>
-            </div>
-          </div>
-        </div>
+
 
         <!-- 文件导入隐藏输入框 -->
         <input type="file" id="importFileInput" accept=".json" style="display: none;" />
