@@ -28,7 +28,7 @@
     try {
       const backupStr = localStorage.getItem('backup');
       if (backupStr) {
-        return backupStr;
+        return JSON.parse(backupStr);
       }
     } catch (error) {
       console.error('读取备份数据失败:', error);
@@ -1918,9 +1918,7 @@
       reader.onload = function(e) {
         try {
           const data = JSON.parse(e.target.result);
-          console.log(data);
-
-          localStorage.setItem('backup', data);
+          localStorage.setItem('backup', JSON.stringify(data));
 
           // 重新加载页面以应用导入的配置
           window.location.reload();
@@ -2104,7 +2102,7 @@
     // 保存Gmail设置
     function saveGmailSettings () {
       try {
-        const dataStr = localStorage.getItem('data1');
+        const dataStr = localStorage.getItem('backup');
         let data = {};
         if (dataStr) {
           data = JSON.parse(dataStr);
@@ -2120,7 +2118,7 @@
         data.setting.setting.notice.gmailNumber = gmailNumberToggle.checked;
 
         // 保存到localStorage
-        localStorage.setItem('data1', JSON.stringify(data));
+        localStorage.setItem('backup', JSON.stringify(data));
 
         console.log('Gmail设置已保存:', {
           gmail: gmailToggle.checked,
@@ -2241,9 +2239,10 @@
 
           // 恢复数据到localStorage
           localStorage.clear();
-          for (const [key, value] of Object.entries(backupData)) {
-            localStorage.setItem(key, value);
-          }
+          // for (const [key, value] of Object.entries(backupData)) {
+          //   localStorage.setItem(key, value);
+          // }
+          saveBackupData(backupData);
 
           alert(`从Github恢复数据成功！\n文件: ${selectedFile.name}`);
           githubSyncModal.style.display = 'none';

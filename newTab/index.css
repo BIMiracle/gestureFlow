@@ -19,7 +19,7 @@ html {
 	position: absolute;
 	z-index: -1;
 	background-size: cover;
-	background-image: url('../images/6979.webp');
+	/* background-image: url('../images/6979.webp'); */
 	background-position: 50%;
 	filter: blur(var(--wallpaper-filter));
 	bottom: calc(var(--wallpaper-filter) * -2);
@@ -573,7 +573,7 @@ body.minimal-mode .pagination-dots {
 
 /* 极简模式下header垂直居中 */
 body.minimal-mode .container {
-	justify-content: center;
+	justify-content: flex-start;
 	padding-top: 0;
 }
 
@@ -582,6 +582,7 @@ body.minimal-mode header {
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
+	margin-top: 30vh;
 }
 
 .minimal-settings .setting-group {
