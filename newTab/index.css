@@ -1130,22 +1130,83 @@ footer {
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background-color: rgba(0, 0, 0, 0.5);
+	background-color: rgba(0, 0, 0, 0.6);
+	/* display: none; */
+	align-items: center;
+	justify-content: center;
+	z-index: 10000;
+}
+
+.github-sync-modal.show {
+	display: flex;
+}
+
+.github-sync-modal .modal-panel {
+	background-color: rgba(255, 255, 255, 0.95);
+	border-radius: 12px;
+	padding: 0;
+	max-width: 500px;
+	width: 90%;
+	max-height: 80vh;
+	overflow: hidden;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+	animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+	from {
+		transform: translateY(-50px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+.github-sync-modal .modal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 20px 24px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+	background-color: rgba(248, 249, 250, 0.8);
+}
+
+.github-sync-modal .modal-header h3 {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 600;
+	color: #333;
+}
+
+.github-sync-modal .close-btn {
+	background: none;
+	border: none;
+	font-size: 24px;
+	color: #666;
+	cursor: pointer;
+	padding: 0;
+	width: 30px;
+	height: 30px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	z-index: 1000;
+	border-radius: 50%;
+	transition: all 0.2s ease;
+}
+
+.github-sync-modal .close-btn:hover {
+	background-color: rgba(0, 0, 0, 0.1);
+	color: #333;
 }
 
 .github-sync-modal .modal-content {
-	background-color: rgba(30, 30, 30, 0.95);
-	border-radius: 1.5vmin;
-	padding: 3vmin;
-	max-width: 50vmin;
-	width: 90%;
-	max-height: 80vh;
+	padding: 24px;
+	background-color: white;
+	max-height: calc(80vh - 80px);
 	overflow-y: auto;
-	border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Gmail授权配置样式 */
@@ -1192,15 +1253,16 @@ footer {
 	border-left: 3px solid rgba(33, 150, 243, 0.5);
 }
 
-.form-group {
-	margin-bottom: 1.5vmin;
+.github-sync-modal .form-group {
+	margin-bottom: 20px;
 }
 
-.form-group label {
+.github-sync-modal .form-group label {
 	display: block;
-	margin-bottom: 0.5vmin;
-	color: #333333;
-	font-size: var(--item-font-size);
+	margin-bottom: 8px;
+	color: #333;
+	font-size: 14px;
+	font-weight: 500;
 }
 
 /* 开关样式 */
@@ -1256,47 +1318,77 @@ footer {
 	box-shadow: 0 0 1px rgba(76, 175, 80, 0.8);
 }
 
-.form-group input {
+.github-sync-modal .form-group input {
 	width: 100%;
-	padding: 1vmin;
-	border: 1px solid #e8e8e8;
-	border-radius: 0.5vmin;
-	background-color: rgba(255, 255, 255, 0.1);
-	color: #333333;
-	font-size: var(--item-font-size);
+	padding: 12px 16px;
+	border: 2px solid #e1e5e9;
+	border-radius: 8px;
+	background-color: #f8f9fa;
+	color: #333;
+	font-size: 14px;
 	box-sizing: border-box;
+	transition: all 0.2s ease;
 }
 
-.form-group input::placeholder {
-	color: rgba(255, 255, 255, 0.6);
+.github-sync-modal .form-group input::placeholder {
+	color: #6c757d;
 }
 
-.form-group input:focus {
+.github-sync-modal .form-group input:focus {
 	outline: none;
-	border-color: #2196f3;
-	background-color: rgba(255, 255, 255, 0.15);
+	border-color: #0066cc;
+	background-color: #fff;
+	box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
 }
 
 .github-actions {
 	display: flex;
-	gap: 1vmin;
-	margin-top: 2vmin;
+	gap: 12px;
+	margin-top: 24px;
+	justify-content: flex-end;
 }
 
 .upload-btn,
 .download-btn,
 .cancel-btn {
-	padding: 1vmin 2vmin;
+	padding: 12px 24px;
 	border: none;
-	border-radius: 0.5vmin;
+	border-radius: 8px;
 	cursor: pointer;
-	font-size: var(--item-font-size);
-	transition: all 0.3s ease;
+	font-size: 14px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+	min-width: 120px;
 }
 
 .upload-btn {
-	background-color: #4caf50;
+	background-color: #28a745;
 	color: white;
+}
+
+.upload-btn:hover:not(:disabled) {
+	background-color: #218838;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.download-btn {
+	background-color: #007bff;
+	color: white;
+}
+
+.download-btn:hover:not(:disabled) {
+	background-color: #0056b3;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.upload-btn:disabled,
+.download-btn:disabled {
+	background-color: #6c757d;
+	cursor: not-allowed;
+	transform: none;
+	box-shadow: none;
 }
 
 .upload-btn:hover {

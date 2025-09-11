@@ -131,6 +131,12 @@
         if (wallpaper) {
           wallpaper.style.backgroundImage = `url(${wallpaperData.url})`;
         }
+        
+        // 设置壁纸预览图
+        const wallpaperPreview = document.getElementById('wallpaperPreview');
+        if (wallpaperPreview) {
+          wallpaperPreview.src = wallpaperData.url;
+        }
       }
 
       // 设置遮罩浓度
@@ -2053,20 +2059,58 @@
     }
 
     // Github同步事件（使用共享的class选择器）
-    const githubSyncElements = document.querySelectorAll('.github-sync-item');
-    const githubSyncModal = document.getElementById('githubSyncModal');
-    const closeGithubModal = document.getElementById('closeGithubModal');
+    // 确保DOM完全加载后再绑定事件
+    function initGithubSyncEvents() {
+      const githubSyncElements = document.querySelectorAll('.github-sync-item');
+      const githubSyncModal = document.getElementById('githubSyncModal');
+      const closeGithubModal = document.getElementById('closeGithubModal');
+      
+      console.log('初始化GitHub同步事件', {
+        githubSyncElements: githubSyncElements.length,
+        githubSyncModal: !!githubSyncModal,
+        closeGithubModal: !!closeGithubModal
+      });
+
+    // 显示GitHub同步模态框
+    function showGithubModal() {
+      if (githubSyncModal) {
+        githubSyncModal.style.display = 'flex';
+        githubSyncModal.classList.add('show');
+        // 清空之前的输入
+        const inputs = githubSyncModal.querySelectorAll('input');
+        inputs.forEach(input => {
+          if (input.id !== 'githubBranch') {
+            input.value = '';
+          }
+        });
+      }
+    }
+
+    // 隐藏GitHub同步模态框
+    function hideGithubModal() {
+      if (githubSyncModal) {
+        githubSyncModal.classList.remove('show');
+        setTimeout(() => {
+          githubSyncModal.style.display = 'none';
+        }, 300);
+      }
+    }
 
     githubSyncElements.forEach(element => {
-      element.addEventListener('click', function() {
-        githubSyncModal.style.display = 'flex';
+      element.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('GitHub同步按钮被点击');
+        showGithubModal();
       });
     });
 
     // 关闭Github同步模态框
     if (closeGithubModal) {
-      closeGithubModal.addEventListener('click', function() {
-        githubSyncModal.style.display = 'none';
+      closeGithubModal.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        hideGithubModal();
       });
     }
 
@@ -2074,10 +2118,107 @@
     if (githubSyncModal) {
       githubSyncModal.addEventListener('click', function(e) {
         if (e.target === githubSyncModal) {
-          githubSyncModal.style.display = 'none';
+          hideGithubModal();
         }
       });
     }
+
+    // 上传到Github
+    const uploadToGithub = document.getElementById('uploadToGithub');
+    if (uploadToGithub) {
+      uploadToGithub.addEventListener('click', async function() {
+        const username = document.getElementById('githubUsername').value.trim();
+        const repo = document.getElementById('githubRepo').value.trim();
+        const branch = document.getElementById('githubBranch').value.trim() || 'main';
+        const token = document.getElementById('githubToken').value.trim();
+
+        if (!username || !repo || !token) {
+          alert('请填写完整的Github配置信息');
+          return;
+        }
+
+        try {
+          // 获取当前备份数据
+          const backupData = getOrCreateBackupData();
+          
+          // 生成文件名
+          const now = new Date();
+          const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
+          const filename = `gestureflow-backup-${timestamp}.json`;
+          
+          // 转换为JSON字符串
+          const jsonString = JSON.stringify(backupData, null, 2);
+          
+          uploadToGithub.textContent = '上传中...';
+          uploadToGithub.disabled = true;
+
+          await githubSync.uploadToGithub(username, repo, branch, token, filename, jsonString);
+
+          alert('上传到Github成功！');
+          hideGithubModal();
+        } catch (error) {
+          alert(`上传失败: ${error.message}`);
+        } finally {
+          uploadToGithub.textContent = '上传到Github';
+          uploadToGithub.disabled = false;
+        }
+      });
+    }
+
+    // 从Github下载
+    const downloadFromGithub = document.getElementById('downloadFromGithub');
+    if (downloadFromGithub) {
+      downloadFromGithub.addEventListener('click', async function() {
+        const username = document.getElementById('githubUsername').value.trim();
+        const repo = document.getElementById('githubRepo').value.trim();
+        const branch = document.getElementById('githubBranch').value.trim() || 'main';
+        const token = document.getElementById('githubToken').value.trim();
+
+        if (!username || !repo || !token) {
+          alert('请填写完整的Github配置信息');
+          return;
+        }
+
+        try {
+          downloadFromGithub.textContent = '获取文件列表...';
+          downloadFromGithub.disabled = true;
+
+          const backupFiles = await githubSync.getBackupFiles(username, repo, branch, token);
+
+          if (backupFiles.length === 0) {
+            alert('未找到备份文件');
+            return;
+          }
+
+          // 默认选择最新的备份文件，也可以让用户选择
+          const selectedFile = backupFiles[0]; // 最新的文件
+
+          downloadFromGithub.textContent = '下载中...';
+
+          const backupData = await githubSync.downloadFromGithub(username, repo, branch, token, selectedFile.name);
+
+          // 验证数据格式
+          if (!backupData || !backupData.data) {
+            throw new Error('备份数据格式无效');
+          }
+
+          // 保存数据
+          saveBackupData(backupData);
+
+          alert(`从Github恢复数据成功！\n文件: ${selectedFile.name}`);
+          hideGithubModal();
+
+          // 刷新页面以应用新数据
+          location.reload();
+        } catch (error) {
+          alert(`下载失败: ${error.message}`);
+        } finally {
+          downloadFromGithub.textContent = '从Github下载';
+          downloadFromGithub.disabled = false;
+        }
+      });
+    }
+  }
 
     // Gmail开关事件监听器
     const gmailToggle = document.getElementById('gmailToggle');
@@ -2158,105 +2299,10 @@
       gmailNumberToggle.addEventListener('change', saveGmailSettings);
     }
 
-    // 上传到Github
-    const uploadToGithub = document.getElementById('uploadToGithub');
-    if (uploadToGithub) {
-      uploadToGithub.addEventListener('click', async function() {
-        const username = document.getElementById('githubUsername').value.trim();
-        const repo = document.getElementById('githubRepo').value.trim();
-        const branch = document.getElementById('githubBranch').value.trim() || 'main';
-        const token = document.getElementById('githubToken').value.trim();
 
-        if (!username || !repo || !token) {
-          alert('请填写完整的Github配置信息');
-          return;
-        }
-
-        try {
-          // 生成备份数据
-          const data = {};
-          for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            data[key] = localStorage.getItem(key);
-          }
-
-          const jsonString = JSON.stringify(data).replace(/\s+/g, '');
-
-          // 生成文件名
-          const now = new Date();
-          const year = now.getFullYear();
-          const month = String(now.getMonth() + 1).padStart(2, '0');
-          const day = String(now.getDate()).padStart(2, '0');
-          const filename = `gestureFlowBackup-${year}-${month}-${day}.json`;
-
-          uploadToGithub.textContent = '上传中...';
-          uploadToGithub.disabled = true;
-
-          await githubSync.uploadToGithub(username, repo, branch, token, filename, jsonString);
-
-          alert('上传到Github成功！');
-          githubSyncModal.style.display = 'none';
-        } catch (error) {
-          alert(`上传失败: ${error.message}`);
-        } finally {
-          uploadToGithub.textContent = '上传到Github';
-          uploadToGithub.disabled = false;
-        }
-      });
-    }
-
-    // 从Github下载
-    const downloadFromGithub = document.getElementById('downloadFromGithub');
-    if (downloadFromGithub) {
-      downloadFromGithub.addEventListener('click', async function() {
-        const username = document.getElementById('githubUsername').value.trim();
-        const repo = document.getElementById('githubRepo').value.trim();
-        const branch = document.getElementById('githubBranch').value.trim() || 'main';
-        const token = document.getElementById('githubToken').value.trim();
-
-        if (!username || !repo || !token) {
-          alert('请填写完整的Github配置信息');
-          return;
-        }
-
-        try {
-          downloadFromGithub.textContent = '获取文件列表...';
-          downloadFromGithub.disabled = true;
-
-          const backupFiles = await githubSync.getBackupFiles(username, repo, branch, token);
-
-          if (backupFiles.length === 0) {
-            alert('未找到备份文件');
-            return;
-          }
-
-          // 默认选择最新的备份文件，也可以让用户选择
-          const selectedFile = backupFiles[0]; // 最新的文件
-
-          downloadFromGithub.textContent = '下载中...';
-
-          const backupData = await githubSync.downloadFromGithub(username, repo, branch, token, selectedFile.name);
-
-          // 恢复数据到localStorage
-          localStorage.clear();
-          // for (const [key, value] of Object.entries(backupData)) {
-          //   localStorage.setItem(key, value);
-          // }
-          saveBackupData(backupData);
-
-          alert(`从Github恢复数据成功！\n文件: ${selectedFile.name}`);
-          githubSyncModal.style.display = 'none';
-
-          // 刷新页面以应用新数据
-          location.reload();
-        } catch (error) {
-          alert(`下载失败: ${error.message}`);
-        } finally {
-          downloadFromGithub.textContent = '从Github下载';
-          downloadFromGithub.disabled = false;
-        }
-      });
-    }
+    
+    // 调用GitHub同步事件初始化
+    initGithubSyncEvents();
   });
 
   // 页面加载完成后初始化数据
