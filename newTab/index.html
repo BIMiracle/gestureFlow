@@ -278,36 +278,58 @@
         <!-- Github同步模态框 -->
         <div class="modal-overlay" id="githubSyncModal" style="display: none;">
           <div class="modal-panel github-sync-modal">
-            <div class="modal-header">
-              <h3>Github同步配置</h3>
-              <button class="close-btn" id="closeGithubModal">×</button>
-            </div>
-            <div class="modal-content">
-              <div class="form-group">
-                <label for="githubUsername">Github用户名</label>
-                <input type="text" id="githubUsername" placeholder="输入Github用户名" />
+            <div class="model-wrap">
+              <div class="modal-header">
+                <h3>Github同步配置</h3>
+                <button class="close-btn" id="closeGithubModal">×</button>
               </div>
-              <div class="form-group">
-                <label for="githubRepo">私有仓库名</label>
-                <input type="text" id="githubRepo" placeholder="输入仓库名" />
-              </div>
-              <div class="form-group">
-                <label for="githubBranch">分支名</label>
-                <input type="text" id="githubBranch" placeholder="main" value="main" />
-              </div>
-              <div class="form-group">
-                <label for="githubToken">访问令牌</label>
-                <input type="password" id="githubToken" placeholder="输入Github访问令牌" />
-              </div>
-              <div class="github-actions">
-                <button class="upload-btn" id="uploadToGithub">上传到Github</button>
-                <button class="download-btn" id="downloadFromGithub">从Github下载</button>
+              <div class="modal-content">
+                <div class="form-group">
+                  <label for="githubUsername">Github用户名</label>
+                  <input type="text" id="githubUsername" placeholder="输入Github用户名" />
+                </div>
+                <div class="form-group">
+                  <label for="githubRepo">私有仓库名</label>
+                  <input type="text" id="githubRepo" placeholder="输入仓库名" />
+                </div>
+                <div class="form-group">
+                  <label for="githubBranch">分支名</label>
+                  <input type="text" id="githubBranch" placeholder="main" value="main" />
+                </div>
+                <div class="form-group">
+                  <label for="githubToken">访问令牌</label>
+                  <input type="password" id="githubToken" placeholder="输入Github访问令牌" />
+                </div>
+                <div class="github-actions">
+                  <button class="upload-btn" id="uploadToGithub">上传到Github</button>
+                  <button class="download-btn" id="downloadFromGithub">从Github下载</button>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-
+        <!-- 备份文件选择模态框 -->
+        <div class="modal-overlay" id="fileSelectModal" style="display: none;">
+          <div class="modal-panel file-select-modal">
+            <div class="model-wrap">
+              <div class="modal-header">
+                <h3>选择备份文件</h3>
+              </div>
+              <div class="modal-content">
+                <div class="file-list-container">
+                  <div class="file-list" id="backupFileList">
+                    <!-- 文件列表将在这里动态生成 -->
+                  </div>
+                </div>
+                <div class="file-select-actions">
+                  <button class="cancel-btn" id="fileSelectCancel">取消</button>
+                  <button class="confirm-btn" id="confirmFileSelect">确认下载</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- 文件导入隐藏输入框 -->
         <input type="file" id="importFileInput" accept=".json" style="display: none;" />
