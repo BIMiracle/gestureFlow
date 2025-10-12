@@ -1,15 +1,21 @@
 // 内容脚本 - 处理页面中的鼠标手势
 
 let isGestureActive = false;
+let isGestureStarted = false; // 新增：标记手势是否真正开始
+let gestureStartTime = 0; // 新增：记录右键按下时间
+let gestureStartPoint = null; // 新增：记录右键按下位置
 let gesturePoints = [];
 let gestureCanvas = null;
 let gestureContext = null;
 let gestureLabel = null;
 let blockContextMenu = false;
+let gestureTimer = null; // 新增：延迟计时器
 let settings = {
   lineColor: '#0066FF',
   lineWidth: 3,
-  gestures: {}
+  gestures: {},
+  gestureDelay: 200, // 新增：手势激活延迟时间（毫秒）
+  minMoveDistance: 15 // 新增：最小移动距离（像素）
 };
 
 // 初始化
@@ -93,16 +99,46 @@ function handleMouseDown(e) {
   // 只响应右键
   if (e.button === 2) {
     isGestureActive = true;
+    isGestureStarted = false; // 重置手势开始状态
     blockContextMenu = false; // 重置标志
+    gestureStartTime = Date.now(); // 记录按下时间
+    gestureStartPoint = { x: e.clientX, y: e.clientY }; // 记录按下位置
     gesturePoints = [{ x: e.clientX, y: e.clientY }];
     
-    // 添加画布和标签到文档
-    if (!document.body.contains(gestureCanvas)) {
-      document.body.appendChild(gestureCanvas);
+    // 清除之前的计时器
+    if (gestureTimer) {
+      clearTimeout(gestureTimer);
+      gestureTimer = null;
     }
-    if (!document.body.contains(gestureLabel)) {
-      document.body.appendChild(gestureLabel);
-    }
+    
+    // 设置延迟计时器
+    gestureTimer = setTimeout(() => {
+      if (isGestureActive && !isGestureStarted) {
+        // 检查是否有足够的移动距离
+        const currentPoint = gesturePoints[gesturePoints.length - 1];
+        const distance = Math.sqrt(
+          Math.pow(currentPoint.x - gestureStartPoint.x, 2) + 
+          Math.pow(currentPoint.y - gestureStartPoint.y, 2)
+        );
+        
+        if (distance >= settings.minMoveDistance) {
+          isGestureStarted = true;
+          blockContextMenu = true;
+          
+          // 添加画布和标签到文档
+          if (!document.body.contains(gestureCanvas)) {
+            document.body.appendChild(gestureCanvas);
+          }
+          if (!document.body.contains(gestureLabel)) {
+            document.body.appendChild(gestureLabel);
+          }
+          
+          // 开始绘制轨迹
+          drawGesture();
+        }
+      }
+      gestureTimer = null;
+    }, settings.gestureDelay);
   }
 }
 
@@ -113,9 +149,31 @@ function handleMouseMove(e) {
   // 添加新的点
   gesturePoints.push({ x: e.clientX, y: e.clientY });
 
-  // 如果鼠标移动了足够距离，则标记为拖拽
-  if (gesturePoints.length > 2) {
-    blockContextMenu = true;
+  // 如果手势还没有正式开始，检查是否满足开始条件
+  if (!isGestureStarted) {
+    const distance = Math.sqrt(
+      Math.pow(e.clientX - gestureStartPoint.x, 2) + 
+      Math.pow(e.clientY - gestureStartPoint.y, 2)
+    );
+    
+    // 如果移动距离足够且时间超过延迟，立即开始手势
+    if (distance >= settings.minMoveDistance && Date.now() - gestureStartTime >= settings.gestureDelay) {
+      isGestureStarted = true;
+      blockContextMenu = true;
+      
+      // 添加画布和标签到文档
+      if (!document.body.contains(gestureCanvas)) {
+        document.body.appendChild(gestureCanvas);
+      }
+      if (!document.body.contains(gestureLabel)) {
+        document.body.appendChild(gestureLabel);
+      }
+    }
+    
+    // 如果手势还没开始，不绘制轨迹
+    if (!isGestureStarted) {
+      return;
+    }
   }
   
   // 绘制手势轨迹
@@ -134,13 +192,25 @@ function handleMouseMove(e) {
 function handleMouseUp(e) {
   if (!isGestureActive || e.button !== 2) return;
   
+  // 清除延迟计时器
+  if (gestureTimer) {
+    clearTimeout(gestureTimer);
+    gestureTimer = null;
+  }
+  
   isGestureActive = false;
   
-  // 识别手势并执行相应操作
-  const gesture = recognizeGesture();
-  if (gesture) {
-    executeGesture(gesture);
+  // 只有在手势真正开始后才执行手势识别
+  if (isGestureStarted) {
+    // 识别手势并执行相应操作
+    const gesture = recognizeGesture();
+    if (gesture) {
+      executeGesture(gesture);
+    }
   }
+  
+  // 重置状态
+  isGestureStarted = false;
   
   // 清理
   clearGesture();

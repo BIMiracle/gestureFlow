@@ -27,6 +27,8 @@
   function getOrCreateBackupData () {
     try {
       const backupStr = localStorage.getItem('backup');
+      console.log(backupStr);
+      
       if (backupStr) {
         const data = JSON.parse(backupStr);
         // 清理错误的第一层setting字段
@@ -1793,15 +1795,56 @@
   // 导出配置功能
   function exportConfig () {
     try {
-      // 获取localStorage中的所有数据
-      const data = {};
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        data[key] = localStorage.getItem(key);
+      // 从localStorage中获取backup数据
+      const backupData = localStorage.getItem('backup');
+      
+      let exportData;
+      if (backupData) {
+        // 如果存在backup数据，解析并使用它
+        try {
+          exportData = JSON.parse(backupData);
+        } catch (parseError) {
+          console.error('解析backup数据失败:', parseError);
+          // 如果解析失败，创建默认结构
+          exportData = {
+            version: "1.0.0",
+            time: Date.now(),
+            data: {}
+          };
+        }
+      } else {
+        // 如果没有backup数据，创建默认结构
+        exportData = {
+          version: "1.0.0",
+          time: Date.now(),
+          data: {}
+        };
       }
 
-      // 去除空格和回车，转换为紧凑的JSON字符串
-      const jsonString = JSON.stringify(data).replace(/\s+/g, '');
+      // 添加根级别的setting配置（从data.setting.setting.notice中提取）
+      if (exportData.data && exportData.data.setting && exportData.data.setting.setting && exportData.data.setting.setting.notice) {
+        exportData.setting = {
+          setting: {
+            notice: {
+              gmail: exportData.data.setting.setting.notice.gmail || false,
+              gmailNumber: exportData.data.setting.setting.notice.gmailNumber || false
+            }
+          }
+        };
+      } else {
+        // 如果没有notice配置，添加默认的根级别setting
+        exportData.setting = {
+          setting: {
+            notice: {
+              gmail: false,
+              gmailNumber: false
+            }
+          }
+        };
+      }
+
+      // 格式化JSON字符串（保持可读性）
+      const jsonString = JSON.stringify(exportData, null, 2);
 
       // 生成文件名
       const now = new Date();
