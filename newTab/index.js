@@ -1719,6 +1719,14 @@
       chrome.identity.getAuthToken({ interactive: true }, function(token) {
         if (chrome.runtime.lastError || !token) {
           console.error("获取Auth Token失败:", chrome.runtime.lastError.message);
+          
+          // 检查是否是客户端ID错误
+          if (chrome.runtime.lastError.message.includes('bad client id')) {
+            console.warn("OAuth客户端ID配置错误，请检查Google Cloud Console中的配置");
+            // 可以在这里显示用户友好的错误提示
+            showGmailError("Gmail功能暂时不可用：OAuth配置错误");
+          }
+          
           // 在这里处理错误，例如用户取消了登录
           return;
         }
@@ -1790,6 +1798,20 @@
         badgeElement.style.display = 'none';
       }
     }
+  }
+
+  // 显示Gmail错误信息
+  function showGmailError(message) {
+    // 查找Gmail图标元素并显示错误状态
+    document.querySelectorAll('.gmail-icon .notification-badge').forEach(badge => {
+      badge.textContent = '!';
+      badge.style.display = 'flex';
+      badge.style.backgroundColor = '#ff4444';
+      badge.title = message;
+    });
+    
+    // 在控制台输出详细错误信息
+    console.error('Gmail功能错误:', message);
   }
 
   // 导出配置功能
