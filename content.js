@@ -14,9 +14,10 @@ let settings = {
   lineColor: '#0066FF',
   lineWidth: 3,
   gestures: {},
-  gestureDelay: 200, // 新增：手势激活延迟时间（毫秒）
-  minMoveDistance: 15 // 新增：最小移动距离（像素）
 };
+const GESTURE_DELAY = 200; // 新增：手势激活延迟时间（毫秒）
+const MIN_MOVE_DISTANCE = 15; // 新增：最小移动距离（像素）
+
 
 // 初始化
 function init() {
@@ -121,7 +122,7 @@ function handleMouseDown(e) {
           Math.pow(currentPoint.y - gestureStartPoint.y, 2)
         );
         
-        if (distance >= settings.minMoveDistance) {
+        if (distance >= MIN_MOVE_DISTANCE) {
           isGestureStarted = true;
           blockContextMenu = true;
           
@@ -138,7 +139,7 @@ function handleMouseDown(e) {
         }
       }
       gestureTimer = null;
-    }, settings.gestureDelay);
+    }, GESTURE_DELAY);
   }
 }
 
