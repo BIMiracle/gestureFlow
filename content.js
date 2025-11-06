@@ -446,10 +446,12 @@ function executeGesture(gesture) {
       break;
     default:
       // 发送消息给背景脚本处理其他操作
-      chrome.runtime.sendMessage({
-        action: 'executeGesture',
-        gesture: action
-      });
+      if (chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({
+          action: 'executeGesture',
+          gesture: action
+        });
+      }
       break;
   }
 }
