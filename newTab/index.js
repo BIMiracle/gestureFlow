@@ -37,6 +37,10 @@
           console.log('已清理错误的第一层setting字段');
           // 立即保存清理后的数据
           localStorage.setItem('backup', JSON.stringify(data));
+        }else if(data.backup && typeof data.backup == 'string'){
+          data = JSON.parse(data.backup).data;
+          // 立即保存清理后的数据
+          localStorage.setItem('backup', JSON.stringify(data));
         }
         return data;
       }
@@ -254,7 +258,15 @@
   async function loadData () {
     try {
       // 优先从localStorage读取备份数据
-      const backupData = getOrCreateBackupData();
+      const backupDataRes = getOrCreateBackupData();
+      let backupData
+      if(backupDataRes && backupDataRes.data){
+        backupData = backupDataRes;
+      }else if(backupDataRes.backup && typeof backupDataRes.backup == 'string'){
+        backupData = JSON.parse(backupDataRes.backup);
+      }else{
+        throw new Error('备份数据格式错误',backupData);
+      }
       sitesData = backupData.data.site.sites;
 
       // 初始化壁纸设置
