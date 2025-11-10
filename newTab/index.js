@@ -1874,6 +1874,12 @@
           return;
         }
         console.log("成功获取到Token:", token);
+        // 缓存令牌用于后续非交互式调用的门控判断
+        try {
+          localStorage.setItem('gmailAccessToken', token);
+        } catch (e) {
+          console.warn('保存 gmailAccessToken 失败:', e);
+        }
 
         fetch('https://gmail.googleapis.com/gmail/v1/users/me/labels/INBOX', {
           headers: {
@@ -1883,7 +1889,9 @@
           .then(response => {
             // 如果响应是401或403，说明Token可能已过期或无效，我们需要移除缓存的Token
             if (response.status === 401 || response.status === 403) {
-              chrome.identity.removeCachedAuthToken({ token: token }, () => { });
+              chrome.identity.removeCachedAuthToken({ token: token }, () => {
+                try { localStorage.removeItem('gmailAccessToken'); } catch (_) {}
+              });
               throw new Error(`认证失败，状态码: ${response.status}`);
             }
             if (!response.ok) {
@@ -1986,24 +1994,14 @@
         };
       }
 
-      // 添加根级别的setting配置（从data.setting.setting.notice中提取）
-      if(exportData?.data?.setting?.setting?.notice){
-        if (exportData?.data?.setting?.setting?.notice?.gmail) {
-          exportData.data.setting.setting.notice.gmail = exportData.data.setting.setting.notice.gmail || false
-        };
-        if (exportData?.data?.setting?.setting?.notice?.gmailNumber) {
-          exportData.data.setting.setting.notice.gmailNumber = exportData.data.setting.setting.notice.gmailNumber || false
-        };
-      }else{
-        exportData.data.setting = {
-            setting: {
-              notice: {
-                gmail: exportData.data.setting.setting.notice.gmail || false,
-                gmailNumber: exportData.data.setting.setting.notice.gmailNumber || false
-              }
-            }
-          }
-      }
+      // 规范化根级别的 setting 配置（保证结构存在并设置默认值）
+      const existingNotice = exportData?.data?.setting?.setting?.notice || {};
+      if (!exportData.data.setting) exportData.data.setting = {};
+      if (!exportData.data.setting.setting) exportData.data.setting.setting = {};
+      exportData.data.setting.setting.notice = {
+        gmail: !!existingNotice.gmail,
+        gmailNumber: !!existingNotice.gmailNumber
+      };
 
       // 格式化JSON字符串（保持可读性）
       const jsonString = JSON.stringify(exportData, null, 2);
@@ -2705,14 +2703,10 @@
     // 加载Gmail设置
     function loadGmailSettings () {
       try {
-        const dataStr = localStorage.getItem('data1');
-        if (dataStr) {
-          const data = JSON.parse(dataStr);
-          if (data.setting && data.setting.setting && data.setting.setting.notice) {
-            gmailToggle.checked = data.setting.setting.notice.gmail || false;
-            gmailNumberToggle.checked = data.setting.setting.notice.gmailNumber || false;
-          }
-        }
+        const backupData = getOrCreateBackupData();
+        const notice = backupData?.data?.setting?.setting?.notice || {};
+        gmailToggle.checked = !!notice.gmail;
+        gmailNumberToggle.checked = !!notice.gmailNumber;
       } catch (error) {
         console.error('加载Gmail设置失败:', error);
       }

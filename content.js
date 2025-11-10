@@ -158,7 +158,9 @@ function handleMouseMove(e) {
     );
     
     // 如果移动距离足够且时间超过延迟，立即开始手势
-    if (distance >= settings.minMoveDistance && Date.now() - gestureStartTime >= settings.gestureDelay) {
+    const minMove = (settings && typeof settings.minMoveDistance === 'number') ? settings.minMoveDistance : MIN_MOVE_DISTANCE;
+    const delay = (settings && typeof settings.gestureDelay === 'number') ? settings.gestureDelay : GESTURE_DELAY;
+    if (distance >= minMove && Date.now() - gestureStartTime >= delay) {
       isGestureStarted = true;
       blockContextMenu = true;
       
