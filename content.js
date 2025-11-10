@@ -15,7 +15,7 @@ let settings = {
   lineWidth: 3,
   gestures: {},
 };
-const GESTURE_DELAY = 200; // 新增：手势激活延迟时间（毫秒）
+const GESTURE_DELAY = 100; // 新增：手势激活延迟时间（毫秒）
 const MIN_MOVE_DISTANCE = 15; // 新增：最小移动距离（像素）
 
 
