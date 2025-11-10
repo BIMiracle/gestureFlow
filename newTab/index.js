@@ -28,7 +28,7 @@
     try {
       const backupStr = localStorage.getItem('backup');
       console.log(backupStr);
-      
+
       if (backupStr) {
         const data = JSON.parse(backupStr);
         // 清理错误的第一层setting字段
@@ -37,7 +37,7 @@
           console.log('已清理错误的第一层setting字段');
           // 立即保存清理后的数据
           localStorage.setItem('backup', JSON.stringify(data));
-        }else if(data.backup && typeof data.backup == 'string'){
+        } else if (data.backup && typeof data.backup == 'string') {
           data = JSON.parse(data.backup).data;
           // 立即保存清理后的数据
           localStorage.setItem('backup', JSON.stringify(data));
@@ -198,55 +198,100 @@
     }
   }
 
+  // 编辑模式状态
+  let isEditing = false;
+  let editingSiteId = null;
+
   // 打开编辑网站模态框
   function openEditModal (site) {
-    const modal = document.getElementById('addSiteModal');
+    // 进入编辑模式并记录当前编辑的站点ID（兼容 id/uuid）
+    isEditing = true;
+    editingSiteId = site.id || site.uuid || null;
+
+    // 打开统一的弹窗并切到添加面板
+    openModal();
+    showAddPanel();
+
+    // 编辑时隐藏主功能入口
+    if (mainActions) {
+      mainActions.style.display = 'none';
+    }
+
     const siteUrl = document.getElementById('siteUrl');
     const siteName = document.getElementById('siteName');
-    const saveBtn = document.getElementById('saveBtn');
+    const addFormTitle = document.querySelector('#addForm h3');
 
-    // 填充当前网站信息
-    siteUrl.value = site.url;
-    siteName.value = site.name;
-
-    // 显示模态框
-    modal.style.display = 'block';
-
-    // 移除之前的事件监听器
-    const newSaveBtn = saveBtn.cloneNode(true);
-    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-
-    // 添加编辑保存事件
-    newSaveBtn.addEventListener('click', () => {
-      saveEditedSite(site.id, siteUrl.value, siteName.value);
-    });
+    // 使用现有数据回填表单（url字段为target）
+    if (siteUrl) siteUrl.value = site.target || site.url || '';
+    if (siteName) siteName.value = site.name || '';
+    if (addFormTitle) addFormTitle.textContent = '编辑网站';
   }
 
   // 保存编辑的网站
-  function saveEditedSite (siteId, newUrl, newName) {
+  function saveEditedSite (siteId, newUrl, newName, iconType, iconData) {
     if (!newUrl || !newName) {
       alert('请填写完整的网站信息');
       return;
     }
 
-    // 查找并更新网站信息
-    const siteIndex = sitesData.findIndex(site => site.id === siteId);
-    if (siteIndex !== -1) {
-      sitesData[siteIndex].url = newUrl;
-      sitesData[siteIndex].name = newName;
+    // 在所有页面中查找并更新网站信息
+    let updated = false;
+    for (let p = 0; p < sitesData.length; p++) {
+      const idx = sitesData[p].findIndex(s => s.id === siteId || s.uuid === siteId);
+      if (idx !== -1) {
+        const site = sitesData[p][idx];
+        // 更新基本信息
+        site.target = newUrl;
+        site.name = newName;
 
+        // 如有图标编辑，更新图标相关字段
+        if (iconType) {
+          try {
+            if (iconType === 'auto') {
+              const domain = new URL(newUrl).hostname;
+              site.bgType = 'image';
+              site.bgImage = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+              site.bgText = '';
+            } else if (iconType === 'text' && iconData) {
+              site.bgType = 'color';
+              site.bgText = iconData.text || newName.charAt(0).toUpperCase();
+              site.bgColor = iconData.bgColor || '#4285f4';
+              site.bgImage = '';
+            } else if (iconType === 'color' && iconData) {
+              site.bgType = 'color';
+              site.bgText = newName.charAt(0).toUpperCase();
+              site.bgColor = iconData.bgColor || '#4285f4';
+              site.bgImage = '';
+            } else if (iconType === 'upload' && iconData) {
+              site.bgType = 'image';
+              site.bgImage = iconData.imageUrl || '';
+              site.bgText = '';
+            }
+          } catch (e) {
+            console.error('更新图标设置失败:', e);
+          }
+        }
+
+        updated = true;
+        break;
+      }
+    }
+
+    if (updated) {
       // 更新备份数据
       updateBackupData();
 
-      // 重新初始化页面
+      // 重新初始化页面并保持当前页
       initAllPages();
-      renderPage(0);
+      renderPage(currentPageIndex);
 
-      // 关闭模态框
-      document.getElementById('addSiteModal').style.display = 'none';
+      // 关闭弹窗
+      closeModal();
 
       // 退出编辑模式
       exitAllEditModes();
+      isEditing = false;
+      editingSiteId = null;
 
       alert('网站信息已更新');
     } else {
@@ -260,12 +305,12 @@
       // 优先从localStorage读取备份数据
       const backupDataRes = getOrCreateBackupData();
       let backupData
-      if(backupDataRes && backupDataRes.data){
+      if (backupDataRes && backupDataRes.data) {
         backupData = backupDataRes;
-      }else if(backupDataRes.backup && typeof backupDataRes.backup == 'string'){
+      } else if (backupDataRes.backup && typeof backupDataRes.backup == 'string') {
         backupData = JSON.parse(backupDataRes.backup);
-      }else{
-        throw new Error('备份数据格式错误',backupData);
+      } else {
+        throw new Error('备份数据格式错误', backupData);
       }
       sitesData = backupData.data.site.sites;
 
@@ -1069,6 +1114,13 @@
     modalOverlay.classList.remove("show");
     // 复原app-grids-container的位置
     appGridsContainer.style.marginLeft = "0";
+
+    // 退出编辑模式并恢复主界面样式
+    isEditing = false;
+    editingSiteId = null;
+    if (mainActions) mainActions.style.display = "flex";
+    const addFormTitle = document.querySelector('#addForm h3');
+    if (addFormTitle) addFormTitle.textContent = '添加网站';
   }
 
   // 显示主要功能按钮
@@ -1440,6 +1492,10 @@
     const saveBtn = document.getElementById("saveBtn");
     saveBtn.disabled = true;
 
+    // 定义选择类型与配置数据
+    let selectedIconType = null;
+    let iconData = {};
+
     // 绑定返回按钮事件
     const backBtn = document.getElementById("backToForm");
     backBtn.removeEventListener("click", backToFormHandler);
@@ -1453,9 +1509,57 @@
 
     backBtn.addEventListener("click", backToFormHandler);
 
+    // 编辑模式下，根据已有图标信息回显选择和配置
+    if (isEditing && editingSiteId) {
+      let currentSite = null;
+      for (let p = 0; p < sitesData.length; p++) {
+        const idx = sitesData[p].findIndex(s => s.id === editingSiteId || s.uuid === editingSiteId);
+        if (idx !== -1) {
+          currentSite = sitesData[p][idx];
+          break;
+        }
+      }
+
+      if (currentSite) {
+        // 默认按照已有类型进行回显
+        if (currentSite.bgType === 'image' && currentSite.bgImage) {
+          selectedIconType = 'upload';
+          iconData.imageUrl = currentSite.bgImage;
+        } else if (currentSite.bgType === 'color') {
+          selectedIconType = 'color';
+          iconData.bgColor = currentSite.bgColor || '#4285f4';
+        }
+
+        // 标记选中并展示配置
+        const option = document.querySelector(`.icon-option[data-type="${selectedIconType}"]`);
+        if (option) option.classList.add('selected');
+        showIconConfig(selectedIconType, siteName, iconConfig);
+
+        // 将颜色或图片回显到配置
+        if (selectedIconType === 'color') {
+          const bgInput = document.getElementById('iconBgColor');
+          if (bgInput && iconData.bgColor) bgInput.value = iconData.bgColor;
+        } else if (selectedIconType === 'upload') {
+          // 如果已有图片，增加一个预览节点
+          const preview = document.createElement('div');
+          preview.id = 'iconImagePreview';
+          preview.style.width = '64px';
+          preview.style.height = '64px';
+          preview.style.borderRadius = '12px';
+          preview.style.backgroundSize = 'cover';
+          preview.style.backgroundPosition = 'center';
+          preview.style.marginTop = '8px';
+          if (iconData.imageUrl) {
+            preview.style.backgroundImage = `url(${iconData.imageUrl})`;
+          }
+          iconConfig.appendChild(preview);
+        }
+
+        saveBtn.disabled = false;
+      }
+    }
+
     // 绑定图标选项事件
-    let selectedIconType = null;
-    let iconData = {};
 
     // 移除之前的事件监听器
     iconOptions.forEach((option) => {
@@ -1482,7 +1586,34 @@
     saveBtn.removeEventListener("click", saveBtn.saveClickHandler);
 
     function saveClickHandler () {
-      if (selectedIconType) {
+      if (!selectedIconType) return;
+
+      // 在保存前，根据选择类型读取当前配置输入值
+      if (selectedIconType === 'text') {
+        const txt = document.getElementById('iconText');
+        const bg = document.getElementById('iconBgColor');
+        iconData.text = txt ? (txt.value || siteName.charAt(0).toUpperCase()) : siteName.charAt(0).toUpperCase();
+        iconData.bgColor = bg ? (bg.value || '#4285f4') : '#4285f4';
+      } else if (selectedIconType === 'color') {
+        const bg = document.getElementById('iconBgColor');
+        iconData.bgColor = bg ? (bg.value || '#4285f4') : '#4285f4';
+      } else if (selectedIconType === 'upload') {
+        const fileInput = document.getElementById('iconFile');
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+          try {
+            const fileUrl = URL.createObjectURL(fileInput.files[0]);
+            iconData.imageUrl = fileUrl;
+          } catch (e) {
+            console.error('生成上传图片预览失败:', e);
+          }
+        }
+      }
+
+      if (isEditing && editingSiteId) {
+        // 编辑模式：保存编辑后的站点信息（包含图标）
+        saveEditedSite(editingSiteId, siteUrl, siteName, selectedIconType, iconData);
+      } else {
+        // 添加模式：新增站点
         saveNewSite(siteUrl, siteName, selectedIconType, iconData);
       }
     }
@@ -1731,14 +1862,14 @@
       chrome.identity.getAuthToken({ interactive: true }, function(token) {
         if (chrome.runtime.lastError || !token) {
           console.error("获取Auth Token失败:", chrome.runtime.lastError.message);
-          
+
           // 检查是否是客户端ID错误
           if (chrome.runtime.lastError.message.includes('bad client id')) {
             console.warn("OAuth客户端ID配置错误，请检查Google Cloud Console中的配置");
             // 可以在这里显示用户友好的错误提示
             showGmailError("Gmail功能暂时不可用：OAuth配置错误");
           }
-          
+
           // 在这里处理错误，例如用户取消了登录
           return;
         }
@@ -1813,7 +1944,7 @@
   }
 
   // 显示Gmail错误信息
-  function showGmailError(message) {
+  function showGmailError (message) {
     // 查找Gmail图标元素并显示错误状态
     document.querySelectorAll('.gmail-icon .notification-badge').forEach(badge => {
       badge.textContent = '!';
@@ -1821,7 +1952,7 @@
       badge.style.backgroundColor = '#ff4444';
       badge.title = message;
     });
-    
+
     // 在控制台输出详细错误信息
     console.error('Gmail功能错误:', message);
   }
@@ -1831,7 +1962,7 @@
     try {
       // 从localStorage中获取backup数据
       const backupData = localStorage.getItem('backup');
-      
+
       let exportData;
       if (backupData) {
         // 如果存在backup数据，解析并使用它
@@ -1856,25 +1987,22 @@
       }
 
       // 添加根级别的setting配置（从data.setting.setting.notice中提取）
-      if (exportData.data && exportData.data.setting && exportData.data.setting.setting && exportData.data.setting.setting.notice) {
-        exportData.setting = {
-          setting: {
-            notice: {
-              gmail: exportData.data.setting.setting.notice.gmail || false,
-              gmailNumber: exportData.data.setting.setting.notice.gmailNumber || false
+      if(exportData?.data?.setting?.setting?.notice){
+        if (exportData?.data?.setting?.setting?.notice?.gmail) {
+          exportData.data.setting.setting.notice.gmail = exportData.data.setting.setting.notice.gmail || false
+        };
+        if (exportData?.data?.setting?.setting?.notice?.gmailNumber) {
+          exportData.data.setting.setting.notice.gmailNumber = exportData.data.setting.setting.notice.gmailNumber || false
+        };
+      }else{
+        exportData.data.setting = {
+            setting: {
+              notice: {
+                gmail: exportData.data.setting.setting.notice.gmail || false,
+                gmailNumber: exportData.data.setting.setting.notice.gmailNumber || false
+              }
             }
           }
-        };
-      } else {
-        // 如果没有notice配置，添加默认的根级别setting
-        exportData.setting = {
-          setting: {
-            notice: {
-              gmail: false,
-              gmailNumber: false
-            }
-          }
-        };
       }
 
       // 格式化JSON字符串（保持可读性）
@@ -2536,39 +2664,39 @@
     }
 
     // 隐藏文件选择模态框（全局函数）
-  function hideFileSelectModal () {
-    const fileSelectModal = document.getElementById('fileSelectModal');
-    if (fileSelectModal) {
-      fileSelectModal.classList.remove('show');
-      setTimeout(() => {
-        fileSelectModal.style.display = 'none';
-      }, 300);
-    }
-  }
-
-  // 文件选择对话框事件处理
-  const fileSelectModal = document.getElementById('fileSelectModal');
-  const fileSelectClose = document.querySelector('#fileSelectModal .close');
-  const fileSelectCancel = document.getElementById('fileSelectCancel');
-  
-  // 关闭按钮事件
-  if (fileSelectClose) {
-    fileSelectClose.addEventListener('click', hideFileSelectModal);
-  }
-  
-  // 取消按钮事件
-  if (fileSelectCancel) {
-    fileSelectCancel.addEventListener('click', hideFileSelectModal);
-  }
-  
-  // 点击模态框外部关闭
-  if (fileSelectModal) {
-    fileSelectModal.addEventListener('click', function(e) {
-      if (e.target === fileSelectModal) {
-        hideFileSelectModal();
+    function hideFileSelectModal () {
+      const fileSelectModal = document.getElementById('fileSelectModal');
+      if (fileSelectModal) {
+        fileSelectModal.classList.remove('show');
+        setTimeout(() => {
+          fileSelectModal.style.display = 'none';
+        }, 300);
       }
-    });
-  }
+    }
+
+    // 文件选择对话框事件处理
+    const fileSelectModal = document.getElementById('fileSelectModal');
+    const fileSelectClose = document.querySelector('#fileSelectModal .close');
+    const fileSelectCancel = document.getElementById('fileSelectCancel');
+
+    // 关闭按钮事件
+    if (fileSelectClose) {
+      fileSelectClose.addEventListener('click', hideFileSelectModal);
+    }
+
+    // 取消按钮事件
+    if (fileSelectCancel) {
+      fileSelectCancel.addEventListener('click', hideFileSelectModal);
+    }
+
+    // 点击模态框外部关闭
+    if (fileSelectModal) {
+      fileSelectModal.addEventListener('click', function(e) {
+        if (e.target === fileSelectModal) {
+          hideFileSelectModal();
+        }
+      });
+    }
 
     // Gmail开关事件监听器
     const gmailToggle = document.getElementById('gmailToggle');
